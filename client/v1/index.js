@@ -65,7 +65,7 @@ function sortDealsByPrice(list){
 // 2. Create a variable and assign it the list of sets by price from lowest to highest
 let sortedDealsbyPrice = sortDealsByPrice(deals);
 // 3. Log the variable
-console.log(sortedDealsbyPrice);
+console.table(sortedDealsbyPrice);
 
 // 🎯 TODO 5: Sort by date
 // 1. Create a function to sort the deals by date
@@ -76,11 +76,14 @@ function sortDealsByDate(list){
 // 2. Create a variable and assign it the list of deals by date from recent to old
 let sortedDealsbyDate = sortDealsByDate(deals);
 // 3. Log the variable
-console.log(sortedDealsbyDate);
+console.table(sortedDealsbyDate);
 
 // 🎯 TODO 6: Filter a specific percentage discount range
 // 1. Filter the list of deals between 50% and 75%
+let dealsWithinRange = deals.filter(deal =>
+  deal.discount>=50 && deal.discount<=75);
 // 2. Log the list
+console.table(dealsWithinRange)
 
 // 🎯 TODO 7: Average percentage discount
 // 1. Determine the average percentage discount of the deals
