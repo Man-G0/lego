@@ -63,14 +63,20 @@ function sortDealsByPrice(list){
   return sortedDeals;
 }
 // 2. Create a variable and assign it the list of sets by price from lowest to highest
-let sortedDeals = sortDealsByPrice(deals);
+let sortedDealsbyPrice = sortDealsByPrice(deals);
 // 3. Log the variable
-console.log(sortedDeals);
+console.log(sortedDealsbyPrice);
 
 // 🎯 TODO 5: Sort by date
 // 1. Create a function to sort the deals by date
+function sortDealsByDate(list){
+  let sortedDeals = list.sort((a,b)=>new Date(a.published)-new Date(b.published));
+  return sortedDeals;
+}
 // 2. Create a variable and assign it the list of deals by date from recent to old
+let sortedDealsbyDate = sortDealsByDate(deals);
 // 3. Log the variable
+console.log(sortedDealsbyDate);
 
 // 🎯 TODO 6: Filter a specific percentage discount range
 // 1. Filter the list of deals between 50% and 75%
