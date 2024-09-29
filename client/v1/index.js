@@ -383,9 +383,14 @@ console.log(p99Price);
 // 🎯 TODO 12: Very old listed items
 // // 1. Log if we have very old items (true or false)
 // // A very old item is an item `released` more than 3 weeks ago.
+let isVeryOldItem = VINTED.some(item=>new Date(item.released)<new Date(Date.now()-Date.parse('2024-09-15')));
+console.log("TODO 12: Very old listed items : "+ isVeryOldItem);
 // 🎯 TODO 13: Find a specific item
 // 1. Find the item with the uuid `f2c5377c-84f9-571d-8712-98902dcbb913`
+let specificItem = VINTED.find(item=>item.uuid==='f2c5377c-84f9-571d-8712-98902dcbb913');
 // 2. Log the item
+console.log("TODO 13: Find a specific item : ");
+console.log(specificItem);
 
 // 🎯 TODO 14: Delete a specific item
 // 1. Delete the item with the uuid `f2c5377c-84f9-571d-8712-98902dcbb913`
