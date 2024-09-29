@@ -139,7 +139,11 @@ console.log(communities);
 
 // 🎯 TODO 10: Sort by date for each community
 // 1. For each set, sort the deals by date, from old to recent
+for(let community in communities){
+  communities[community] = sortDealsByDate(communities[community]);
+}
 // 2. Log the sort
+console.log(communities);
 
 
 /**
