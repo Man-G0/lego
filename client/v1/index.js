@@ -363,8 +363,15 @@ const VINTED = [
 
 // 🎯 TODO 11: Compute the average, the p95 and the p99 price value
 // 1. Compute the average price value of the listing
+let averagePrice = VINTED.reduce((acc,item)=>acc+item.price,0)/VINTED.length;
+console.log(averagePrice);
 // 2. Compute the p95 price value of the listing
+let sortedPrices = VINTED.map(item=>item.price).sort((a,b)=>a-b);
+let p95Price = sortedPrices[Math.floor(sortedPrices.length*0.95)];
+console.log(p95Price);
 // 3. Compute the p99 price value of the listing
+let p99Price = sortedPrices[Math.floor(sortedPrices.length*0.99)];
+console.log(p99Price);
 // The p95 value (95th percentile) is the lower value expected to be exceeded in 95% of the vinted items
 
 // 🎯 TODO 12: Very old listed items
