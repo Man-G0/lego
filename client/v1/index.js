@@ -394,9 +394,15 @@ console.log(specificItem);
 
 // 🎯 TODO 14: Delete a specific item
 // 1. Delete the item with the uuid `f2c5377c-84f9-571d-8712-98902dcbb913`
+let index = VINTED.indexOf(specificItem);
+if(index>-1){
+  VINTED.splice(index,1);
+}
 // 2. Log the new list of items
+console.log("TODO 14: Delete a specific item : ");
+console.table(VINTED);
 
-// 🎯 TODO 5: Save a favorite item
+// 🎯 TODO 15: Save a favorite item
 // We declare and assign a variable called `sealedCamera`
 let sealedCamera = {
   title: 'La caméra Hommage à Walt Disney lego set 43230',
@@ -413,8 +419,11 @@ let camera = sealedCamera;
 camera.favorite = true;
 
 // 1. Log `sealedCamera` and `camera` variables
+console.log("TODO 15: Save a favorite item : ");
+console.log(sealedCamera);
+console.log(camera);
 // 2. What do you notice?
-
+// The `sealedCamera` object is also updated with the `favorite` property set to true
 // we make (again) a new assignment again
 sealedCamera = {
   title: 'La caméra Hommage à Walt Disney lego set 43230',
@@ -425,9 +434,11 @@ sealedCamera = {
 };
 
 // 3. Update `camera` property with `favorite` to true WITHOUT changing sealedCamera properties
+camera = {...sealedCamera,favorite:true};
+console.log(camera);
+console.log(sealedCamera);
 
-
-// 🎯 TODO 11: Compute the profitability
+// 🎯 TODO 16: Compute the profitability
 // From a specific deal called `deal`
 const deal = {
   'title':  'La caméra Hommage à Walt Disney',
@@ -435,9 +446,17 @@ const deal = {
   'price': 56.98,
   'legoId': '43230'
 }
+let profitability = deal.retail-deal.price;
+console.log("TODO 16: Compute the profitability : ");
+console.log(profitability);
 
 // 1. Compute the potential highest profitability based on the VINTED items
+let potentialProfitability = 0;
+for(let item of VINTED){
+  potentialProfitability = Math.max(potentialProfitability,item.price-deal.price);
+}
 // 2. Log the value
+console.log(potentialProfitability);
 
 
 
@@ -449,4 +468,7 @@ const deal = {
 
 // 🎯 LAST TODO: Save in localStorage
 // 1. Save MY_FAVORITE_DEALERS in the localStorage
+localStorage.setItem('MY_FAVORITE_DEALERS', JSON.stringify(MY_FAVORITE_DEALERS));
 // 2. log the localStorage
+console.log("LAST TODO: Save in localStorage : ");
+console.log(localStorage.getItem('MY_FAVORITE_DEALERS', JSON.stringify(MY_FAVORITE_DEALERS)));
