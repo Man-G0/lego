@@ -45,16 +45,16 @@ console.log(highestReduction);
 // 1. Create a variable and assign it the number of deals
 const numberOfDeals = deals.length;
 // 2. Log the variable
-console.log(numberOfDeals);
+console.log("TODO 2: Number of deals : "+numberOfDeals);
 
 // 🎯 TODO 3: Website name
 // 1. Create a variable and assign it the list of shopping community name only
 const shoppingCommunities = deals.map(deal => deal.community);
 // 2. Log the variable
-console.log(shoppingCommunities);
+console.log("TODO 3: Website name : "+shoppingCommunities);
 // 3. Log how many shopping communities we have
 let shoppingCommunitiesCount = [...new Set(shoppingCommunities)].length;
-console.log(shoppingCommunitiesCount);
+console.log("TODO 3: Website name : "+shoppingCommunitiesCount);
 
 // 🎯 TODO 4: Sort by price
 // 1. Create a function to sort the deals by price
@@ -65,6 +65,7 @@ function sortDealsByPrice(list){
 // 2. Create a variable and assign it the list of sets by price from lowest to highest
 let sortedDealsbyPrice = sortDealsByPrice(deals);
 // 3. Log the variable
+console.log("TODO 4: Sort by price : ");
 console.table(sortedDealsbyPrice);
 
 // 🎯 TODO 5: Sort by date
@@ -76,19 +77,21 @@ function sortDealsByDate(list){
 // 2. Create a variable and assign it the list of deals by date from recent to old
 let sortedDealsbyDate = sortDealsByDate(deals);
 // 3. Log the variable
+console.log("TODO 5: Sort by date : ");
 console.table(sortedDealsbyDate);
 
 // 🎯 TODO 6: Filter a specific percentage discount range
 // 1. Filter the list of deals between 50% and 75%
 let dealsWithinRange = deals.filter(deal => deal.discount>=50 && deal.discount<=75);
 // 2. Log the list
-console.table(dealsWithinRange)
+console.table("TODO 6: Filter a specific percentage discount range : ")
+console.table(dealsWithinRange);
 
 // 🎯 TODO 7: Average percentage discount
 // 1. Determine the average percentage discount of the deals
 let averageDiscount = deals.reduce((acc,deal)=>acc+deal.discount,0)/deals.length;
 // 2. Log the average
-console.log(averageDiscount);
+console.log("TODO 7: Average percentage discount : "+averageDiscount);
 
 /**
  * 🏎
@@ -118,6 +121,7 @@ for (let deal of deals){
   communities[deal.community].push(deal);
 }
 // 2. Log the variable
+console.log("TODO 8: Deals by community : ");
 console.log(communities);
 // 3. Log the number of deals by community
 for(let community in communities){
@@ -135,6 +139,7 @@ for(let community in communities){
   communities[community] = sortDealsByDiscount(communities[community]);
 }
 // 2. Log the sort
+console.log("TODO 9: Sort by price for each community : ");
 console.log(communities);
 
 // 🎯 TODO 10: Sort by date for each community
@@ -143,6 +148,7 @@ for(let community in communities){
   communities[community] = sortDealsByDate(communities[community]);
 }
 // 2. Log the sort
+console.log("TODO 10: Sort by date for each community : ");
 console.log(communities);
 
 
@@ -364,7 +370,7 @@ const VINTED = [
 // 🎯 TODO 11: Compute the average, the p95 and the p99 price value
 // 1. Compute the average price value of the listing
 let averagePrice = VINTED.reduce((acc,item)=>acc+item.price,0)/VINTED.length;
-console.log(averagePrice);
+console.log("TODO 11: Compute the average, the p95 and the p99 price value : "+averagePrice);
 // 2. Compute the p95 price value of the listing
 let sortedPrices = VINTED.map(item=>item.price).sort((a,b)=>a-b);
 let p95Price = sortedPrices[Math.floor(sortedPrices.length*0.95)];
@@ -377,7 +383,6 @@ console.log(p99Price);
 // 🎯 TODO 12: Very old listed items
 // // 1. Log if we have very old items (true or false)
 // // A very old item is an item `released` more than 3 weeks ago.
-
 // 🎯 TODO 13: Find a specific item
 // 1. Find the item with the uuid `f2c5377c-84f9-571d-8712-98902dcbb913`
 // 2. Log the item
