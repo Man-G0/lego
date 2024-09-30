@@ -31,6 +31,10 @@ const selectPage = document.querySelector('#page-select');
 const selectLegoSetIds = document.querySelector('#lego-set-id-select');
 const sectionDeals= document.querySelector('#deals');
 const spanNbDeals = document.querySelector('#nbDeals');
+const buttonBestDiscount = document.querySelector('#best-discount-button');
+const buttonMostCommented = document.querySelector('#most-commented-button');
+const buttonHotDeals = document.querySelector('#hot-deals-button');
+
 
 /**
  * Set global value
@@ -163,3 +167,37 @@ selectPage.addEventListener('change', async (event) => {
   setCurrentDeals(deals);
   render(currentDeals, currentPagination);
 });
+function sortDealsByDiscount(list){
+  let sortedDeals = list.sort((a,b)=>b.discount-a.discount);
+  return sortedDeals;
+}
+/**
+ * order by the discount desc and display only the deals with a discount >50
+ */
+buttonBestDiscount.addEventListener('click', async() => {
+  const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
+  setCurrentDeals(deals);
+  console.log('Sorted by Best discount !!')
+  currentDeals = sortDealsByDiscount(currentDeals).filter(deal => deal.discount>=50);
+  console.table(currentDeals)
+  render(currentDeals,currentPagination);
+})
+
+buttonMostCommented.addEventListener('click', async() => {
+  const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
+  setCurrentDeals(deals);
+  currentDeals = currentDeals.filter(deal => deal.comments>=15);
+  console.log('Sorted by Most commented !')
+  console.table(currentDeals)
+  render(currentDeals,currentPagination);
+})
+
+buttonHotDeals.addEventListener('click', async() => {
+  const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
+  setCurrentDeals(deals);
+  currentDeals = currentDeals.filter(deal => deal.temperature>= 100);
+  console.log('Sorted by Hot deals !')
+  console.table(currentDeals)
+  render(currentDeals,currentPagination);
+})
+
