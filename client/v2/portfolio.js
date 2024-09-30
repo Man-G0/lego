@@ -140,7 +140,7 @@ const render = (deals, pagination) => {
 /**
  * Declaration of all Listeners
  */
-
+ 
 /**
  * Select the number of deals to display
  */
@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 selectPage.addEventListener('change', async (event) => {
-  const deals = await fetchDeals(parseInt(event.target.value));
+  const deals = await fetchDeals(parseInt(event.target.value), selectShow.value);
   setCurrentDeals(deals);
   render(currentDeals, currentPagination);
 });
