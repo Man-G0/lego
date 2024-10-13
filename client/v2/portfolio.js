@@ -118,10 +118,9 @@ const renderPagination = pagination => {
  */
 const renderLegoSetIds = deals => {
   const ids = getIdsFromDeals(deals);
-  const options = ids.map(id => 
-    `<option value="${id}">${id}</option>`
-  ).join('');
-
+  const options = ['<option value="">All Sets</option>']
+    .concat(ids.map(id => `<option value="${id}">${id}</option>`))
+    .join('');
   selectLegoSetIds.innerHTML = options;
 };
 
@@ -167,6 +166,17 @@ selectPage.addEventListener('change', async (event) => {
   const deals = await fetchDeals(parseInt(event.target.value), selectShow.value);
   setCurrentDeals(deals);
   render(currentDeals, currentPagination);
+});
+
+selectLegoSetIds.addEventListener('change', async (event) => {  
+  const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
+  setCurrentDeals(deals);
+  const selectedId = event.target.value;
+  if(selectedId!=''){
+    currentDeals = currentDeals.filter(deal => deal.id === event.target.value);
+  }
+  render(currentDeals, currentPagination);
+  selectLegoSetIds.value = selectedId;
 });
 function sortDealsByDiscount(list){
   let sortedDeals = list.sort((a,b)=>b.discount-a.discount);
@@ -224,3 +234,5 @@ selectSort.addEventListener('change', async (event) => {
   console.table(currentDeals)
   render(currentDeals, currentPagination);
 });
+
+
