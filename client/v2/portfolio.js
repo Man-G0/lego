@@ -32,6 +32,7 @@ const selectLegoSetIds = document.querySelector('#lego-set-id-select');
 const selectSort = document.querySelector('#sort-select');
 const sectionDeals= document.querySelector('#deals');
 const spanNbDeals = document.querySelector('#nbDeals');
+const spanNbSales = document.querySelector('#nbSales');
 const buttonBestDiscount = document.querySelector('#best-discount-button');
 const buttonMostCommented = document.querySelector('#most-commented-button');
 const buttonHotDeals = document.querySelector('#hot-deals-button');
@@ -45,6 +46,26 @@ const buttonHotDeals = document.querySelector('#hot-deals-button');
 const setCurrentDeals = ({result, meta}) => {
   currentDeals = result;
   currentPagination = meta;
+};
+
+/**
+ * Fetch numbers of sales for a given lego set id
+ */
+const fetchSales = async id => {
+  try {
+    const response = await fetch(`https://lego-api-blue.vercel.app/sales?id=${id}`);
+    const body = await response.json();
+
+    if (body.success !== true) {
+      console.error(body);
+      return [];
+    }
+
+    return body.data;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
 };
 
 /**
@@ -170,11 +191,15 @@ selectPage.addEventListener('change', async (event) => {
 
 selectLegoSetIds.addEventListener('change', async (event) => {  
   const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
+  
   setCurrentDeals(deals);
   const selectedId = event.target.value;
   if(selectedId!=''){
+    const sales = await fetchSales(event.target.value);
+    spanNbSales.innerHTML = sales.result.length;
     currentDeals = currentDeals.filter(deal => deal.id === event.target.value);
   }
+  
   render(currentDeals, currentPagination);
   selectLegoSetIds.value = selectedId;
 });
