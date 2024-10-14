@@ -10,3 +10,7 @@
 const getIdsFromDeals = deals => {
     return deals.map(deal => deal.id)
 }
+
+const getIdsFromVintedSales = sales => {
+    return sales.map(sale => sale.id)
+}

@@ -23,19 +23,26 @@ This endpoint accepts the following optional query string parameters:
 
 // current deals on the page
 let currentDeals = [];
+let currentSales = [];
 let currentPagination = {};
 
 // instantiate the selectors
 const selectShow = document.querySelector('#show-select');
 const selectPage = document.querySelector('#page-select');
 const selectLegoSetIds = document.querySelector('#lego-set-id-select');
+const spanLegoSetName = document.querySelector('#lego-set-name');
 const selectSort = document.querySelector('#sort-select');
 const sectionDeals= document.querySelector('#deals');
+const sectionVintedSales= document.querySelector('#vinted-sales');
 const spanNbDeals = document.querySelector('#nbDeals');
 const spanNbSales = document.querySelector('#nbSales');
 const buttonBestDiscount = document.querySelector('#best-discount-button');
 const buttonMostCommented = document.querySelector('#most-commented-button');
 const buttonHotDeals = document.querySelector('#hot-deals-button');
+const spanP5 = document.querySelector('#p5-sale-price');
+const spanP50 = document.querySelector('#p50-sale-price');
+const spanP25 = document.querySelector('#p25-sale-price');
+const average = document.querySelector('#average-price');
 
 
 /**
@@ -43,8 +50,9 @@ const buttonHotDeals = document.querySelector('#hot-deals-button');
  * @param {Array} result - deals to display
  * @param {Object} meta - pagination meta info
  */
-const setCurrentDeals = ({result, meta}) => {
+const setCurrentDeals = ({result, meta,sales}) => {
   currentDeals = result;
+  currentSales = sales;
   currentPagination = meta;
 };
 
@@ -66,6 +74,36 @@ const fetchSales = async id => {
     console.error(error);
     return [];
   }
+};
+
+const renderVintedSales = () => {
+  if (!currentSales.length) {
+    sectionVintedSales.innerHTML = '';
+    sectionVintedSales.innerHTML = '<h2>Vinted Sales</h2><p>Please choose a specific set</p>';
+    return;
+  }
+  else {
+    const fragment = document.createDocumentFragment();
+    const div = document.createElement('div');
+    const template = currentSales
+      .map(sale => {
+        return `
+      <div class="sale" id=${sale.uuid}>
+        <span>${sale.id}</span>
+        <a href="${sale.link}">${sale.title}</a>
+        <span>${sale.price}</span>
+      </div>
+    `;
+      })
+      .join('');
+
+    div.innerHTML = template;
+    sectionVintedSales.innerHTML = '<h2>Vinted Sales</h2>';
+    fragment.appendChild(div);
+    sectionVintedSales.appendChild(fragment);
+  }
+  
+
 };
 
 /**
@@ -161,6 +199,20 @@ const render = (deals, pagination) => {
   renderIndicators(pagination);
   renderLegoSetIds(deals)
 };
+const calculatePriceIndicators = () => {
+  if (!currentSales.length) {
+    return { average: 0, p5: 0, p25: 0, p50: 0 };
+  }else{
+    const prices = currentSales.map(sale => parseFloat(sale.price)).sort((a, b) => a - b);
+  const avg = prices.reduce((sum, price) => sum + price, 0) / prices.length;
+  const p5 = prices[Math.floor(prices.length * 0.05)];
+  const p25 = prices[Math.floor(prices.length * 0.25)];
+  const p50 = prices[Math.floor(prices.length * 0.50)];
+  return { avg, p5, p25, p50 };
+  }
+
+  
+};
 
 /**
  * Declaration of all Listeners
@@ -178,6 +230,7 @@ selectShow.addEventListener('change', async (event) => {
 
 document.addEventListener('DOMContentLoaded', async () => {
   const deals = await fetchDeals();
+  const sales = await fetchSales();
 
   setCurrentDeals(deals);
   render(currentDeals, currentPagination);
@@ -189,6 +242,16 @@ selectPage.addEventListener('change', async (event) => {
   render(currentDeals, currentPagination);
 });
 
+const displayPriceIndicators = ({ avg, p5, p25, p50 }) => {
+  console.log('Price indicators displayed !!')
+  console.log(`average : ${avg.toFixed(2)}, P5: ${p5.toFixed(2)} P25: ${p25.toFixed(2)} P50: ${p50.toFixed(2)}`)
+  average.innerHTML = avg.toFixed(2);
+  spanP5.innerHTML = p5.toFixed(2);
+  spanP25.innerHTML = p25.toFixed(2);
+  spanP50.innerHTML = p50.toFixed(2);
+ 
+};
+
 selectLegoSetIds.addEventListener('change', async (event) => {  
   const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
   
@@ -196,8 +259,23 @@ selectLegoSetIds.addEventListener('change', async (event) => {
   const selectedId = event.target.value;
   if(selectedId!=''){
     const sales = await fetchSales(event.target.value);
+    spanLegoSetName.innerHTML = deals.result.find(deal => deal.id === event.target.value).title;
+    currentSales = sales.result;
+    const priceIndicators = calculatePriceIndicators(sales);
+    displayPriceIndicators(priceIndicators);
+    
     spanNbSales.innerHTML = sales.result.length;
     currentDeals = currentDeals.filter(deal => deal.id === event.target.value);
+    renderVintedSales();
+    console.table(currentSales);
+  }
+  else{
+    spanLegoSetName.innerHTML = '';
+    spanNbSales.innerHTML = 0;
+    currentSales = [];
+    renderVintedSales();
+  
+    displayPriceIndicators({ avg: 0, p5: 0, p25: 0, p50: 0 });
   }
   
   render(currentDeals, currentPagination);
