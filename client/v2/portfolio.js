@@ -76,6 +76,30 @@ const fetchSales = async id => {
   }
 };
 
+const durationSince = (date) => {
+  console.log(date);
+  console.log(new Date());
+  console.log(new Date(date * 1000));
+  date = (new Date().getTime() - date * 1000) / 1000;
+  const months = Math.floor(date / 60 / 60 / 24 / 30);
+  const remainingDays = Math.floor(date / 60 / 60 / 24 % 30.4);
+  const remainingHours = Math.floor(date / 60 / 60 % 24);
+  const remainingMinutes = Math.floor(date / 60 % 60);
+
+  const parts = [];
+  if (months > 0) parts.push(`${months} months and`);
+  if (remainingDays > 0) parts.push(`${remainingDays} days`);
+  else{
+    if (remainingHours > 0) parts.push(`${remainingHours} hours and`);
+    if (remainingMinutes > 0) parts.push(`${remainingMinutes} minutes`);
+  }
+  return parts.join(' ');
+  };
+  const formatageDate = (date) => {
+    date = new Date(date * 1000);
+    return `${date.getDay()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+  }
+
 const renderVintedSales = () => {
   if (!currentSales.length) {
     sectionVintedSales.innerHTML = '';
@@ -85,13 +109,23 @@ const renderVintedSales = () => {
   else {
     const fragment = document.createDocumentFragment();
     const div = document.createElement('div');
+    const oldestLifetimeValue = currentSales.map(sale => sale.published).sort((a, b) => a - b)[0];
+    const oldestDuration = durationSince(oldestLifetimeValue);
+
+    document.querySelector('#lifetime-value').innerHTML = oldestDuration;
+    document.querySelector('#lifetime-value').append(' ago');
+
+    document.querySelector('#recent-value').innerHTML = durationSince(currentSales.map(sale => sale.published).sort((a, b) => b - a)[0]);
+    document.querySelector('#recent-value').append(' ago');
+
     const template = currentSales
       .map(sale => {
         return `
       <div class="sale" id=${sale.uuid}>
-        <span>${sale.id}</span>
+        <span>${formatageDate(sale.published)}/</span>
         <a href="${sale.link}">${sale.title}</a>
         <span>${sale.price}</span>
+        <span>${durationSince(sale.published)} ago </span>
       </div>
     `;
       })
@@ -243,8 +277,6 @@ selectPage.addEventListener('change', async (event) => {
 });
 
 const displayPriceIndicators = ({ avg, p5, p25, p50 }) => {
-  console.log('Price indicators displayed !!')
-  console.log(`average : ${avg.toFixed(2)}, P5: ${p5.toFixed(2)} P25: ${p25.toFixed(2)} P50: ${p50.toFixed(2)}`)
   average.innerHTML = avg.toFixed(2);
   spanP5.innerHTML = p5.toFixed(2);
   spanP25.innerHTML = p25.toFixed(2);
@@ -267,8 +299,7 @@ selectLegoSetIds.addEventListener('change', async (event) => {
     spanNbSales.innerHTML = sales.result.length;
     currentDeals = currentDeals.filter(deal => deal.id === event.target.value);
     renderVintedSales();
-    console.table(currentSales);
-  }
+    }
   else{
     spanLegoSetName.innerHTML = '';
     spanNbSales.innerHTML = 0;
