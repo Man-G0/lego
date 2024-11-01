@@ -20,12 +20,12 @@ This endpoint accepts the following optional query string parameters:
 
 - `id` - lego set id to return
 */
- // to store all deals
-let allDeals = [];
 // current deals on the page
 let currentDeals = [];
 let currentSales = [];
 let currentPagination = {};
+
+let favoriteDealIds = [];
 
 // instantiate the selectors
 const selectShow = document.querySelector('#show-select');
@@ -52,20 +52,9 @@ const average = document.querySelector('#average-price');
  * @param {Object} meta - pagination meta info
  */
 
-const setAllDeals = ({ result, meta, sales }) => {
-  allDeals = result.map(deal => ({
-    ...deal,                
-    favorite: false         
-  }));
-  currentDeals = allDeals;
-  currentSales = sales;
-  currentPagination = meta;
-}
+
 const setCurrentDeals = ({ result, meta, sales }) => {
-  currentDeals = result.map(deal => ({
-    ...deal,
-    favorite: false
-  }));
+  currentDeals = result;
   currentSales = sales;
   currentPagination = meta;
 };
@@ -194,9 +183,9 @@ const renderDeals = deals => {
         <a href="${deal.link}" target="_blank">${deal.title}</a>
         <span>${deal.price}</span>
         <img 
-          src="${deal.favorite ? '../images/star.png' : '../images/empty-star.png'}" 
+          src="${favoriteDealIds.includes(deal.id) ? '../images/star.png' : '../images/empty-star.png'}" 
           class="favorite-icon" 
-          data-id="${deal.uuid}" 
+          deal-id="${deal.id}" 
           alt="Add to favorites" 
           style="width: 20px; cursor: pointer;"
         />
@@ -213,7 +202,8 @@ const renderDeals = deals => {
   const favoriteIcons = div.querySelectorAll('.favorite-icon');
   favoriteIcons.forEach(icon => {
     icon.addEventListener('click', (event) => {
-      const dealId = event.target.getAttribute('data-id');
+      console.log(event.target.getAttribute('deal-id'));
+      const dealId = event.target.getAttribute('deal-id');
       toggleFavorite(event.target, dealId);
     });
   });
@@ -222,11 +212,12 @@ const renderDeals = deals => {
     if (icon.src.includes('empty-star.png')) {
       icon.src = '../images/star.png'; // Path to filled star
       console.log(`Deal ${dealId} added to favorites`);
-      deals.find(deal => deal.uuid === dealId).favorite = true;
+      favoriteDealIds.push(dealId);
     } else {
       icon.src = '../images/empty-star.png'; // Path to empty star
       console.log(`Deal ${dealId} removed from favorites`);
       deals.find(deal => deal.uuid === dealId).favorite = false;
+      favoriteDealIds = favoriteDealIds.filter(id => id !== dealId);
     }
   };
 };
@@ -305,7 +296,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   const deals = await fetchDeals();
   const sales = await fetchSales();
 
-  setAllDeals(deals);
+  setCurrentDeals(deals);
   render(currentDeals, currentPagination);
 });
 
@@ -366,21 +357,27 @@ function sortDealsByDiscount(list) {
  * order by the discount desc and display only the deals with a discount >50
  */
 buttonBestDiscount.addEventListener('click', async () => {
+  const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
+  setCurrentDeals(deals);
   console.log('Sorted by Best discount !!')
-  currentDeals = allDeals.filter(deal => deal.discount >= 50);
+  currentDeals = sortDealsByDiscount(currentDeals).filter(deal => deal.discount >= 50);
   console.table(currentDeals)
   render(currentDeals, currentPagination);
 })
 
 buttonMostCommented.addEventListener('click', async () => {
-  currentDeals = allDeals.filter(deal => deal.comments >= 15);
+  const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
+  setCurrentDeals(deals);
+  currentDeals = currentDeals.filter(deal => deal.comments >= 15);
   console.log('Sorted by Most commented !')
   console.table(currentDeals)
   render(currentDeals, currentPagination);
 })
 
 buttonHotDeals.addEventListener('click', async () => {
-  currentDeals = allDeals.filter(deal => deal.temperature >= 100);
+  const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
+  setCurrentDeals(deals);
+  currentDeals = currentDeals.filter(deal => deal.temperature >= 100);
   console.log('Sorted by Hot deals !')
   console.table(currentDeals)
   render(currentDeals, currentPagination);
