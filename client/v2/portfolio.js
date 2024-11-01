@@ -97,7 +97,7 @@ const durationSince = (date) => {
   };
   const formatageDate = (date) => {
     date = new Date(date * 1000);
-    return `${date.getDay()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+    return `${String(date.getDay()).padStart(2, '0')}/${String(date.getMonth()).padStart(2, '0')}/${date.getFullYear()}`;
   }
 
 const renderVintedSales = () => {
@@ -122,8 +122,8 @@ const renderVintedSales = () => {
       .map(sale => {
         return `
       <div class="sale" id=${sale.uuid}>
-        <span>${formatageDate(sale.published)}/</span>
-        <a href="${sale.link}">${sale.title}</a>
+        <span>${formatageDate(sale.published)}</span>
+        <a href="${sale.link}" target="_blank">${sale.title}</a>
         <span>${sale.price}</span>
         <span>${durationSince(sale.published)} ago </span>
       </div>
@@ -177,7 +177,7 @@ const renderDeals = deals => {
       return `
       <div class="deal" id=${deal.uuid}>
         <span>${deal.id}</span>
-        <a href="${deal.link}">${deal.title}</a>
+        <a href="${deal.link}" target="_blank">${deal.title}</a>
         <span>${deal.price}</span>
       </div>
     `;
