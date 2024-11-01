@@ -40,6 +40,7 @@ const spanNbSales = document.querySelector('#nbSales');
 const buttonBestDiscount = document.querySelector('#best-discount-button');
 const buttonMostCommented = document.querySelector('#most-commented-button');
 const buttonHotDeals = document.querySelector('#hot-deals-button');
+const buttonFavoriteDeals = document.querySelector('#favorites-button');
 const spanP5 = document.querySelector('#p5-sale-price');
 const spanP50 = document.querySelector('#p50-sale-price');
 const spanP25 = document.querySelector('#p25-sale-price');
@@ -359,7 +360,6 @@ function sortDealsByDiscount(list) {
 buttonBestDiscount.addEventListener('click', async () => {
   const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
   setCurrentDeals(deals);
-  console.log('Sorted by Best discount !!')
   currentDeals = sortDealsByDiscount(currentDeals).filter(deal => deal.discount >= 50);
   console.table(currentDeals)
   render(currentDeals, currentPagination);
@@ -383,6 +383,15 @@ buttonHotDeals.addEventListener('click', async () => {
   render(currentDeals, currentPagination);
 })
 
+
+buttonFavoriteDeals.addEventListener('click', async () => {
+  const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
+  setCurrentDeals(deals);
+  currentDeals = currentDeals.filter(deal => favoriteDealIds.includes(deal.id));
+  console.log('Sorted by Favorite deals !')
+  console.table(currentDeals)
+  render(currentDeals, currentPagination);
+})
 
 selectSort.addEventListener('change', async (event) => {
   const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
