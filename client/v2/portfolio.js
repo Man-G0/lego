@@ -37,10 +37,10 @@ const sectionDeals = document.querySelector('#deals');
 const sectionVintedSales = document.querySelector('#vinted-sales');
 const spanNbDeals = document.querySelector('#nbDeals');
 const spanNbSales = document.querySelector('#nbSales');
-const buttonBestDiscount = document.querySelector('#best-discount-button');
-const buttonMostCommented = document.querySelector('#most-commented-button');
-const buttonHotDeals = document.querySelector('#hot-deals-button');
-const buttonFavoriteDeals = document.querySelector('#favorites-button');
+const buttonBestDiscount = document.querySelector('#best-discount-toggle')
+const buttonMostCommented = document.querySelector('#most-commented-toggle');
+const buttonHotDeals = document.querySelector('#hot-deals-toggle');
+const buttonFavoriteDeals = document.querySelector('#favorites-toggle');
 const spanP5 = document.querySelector('#p5-sale-price');
 const spanP50 = document.querySelector('#p50-sale-price');
 const spanP25 = document.querySelector('#p25-sale-price');
@@ -174,6 +174,12 @@ const fetchDeals = async (page = 1, size = 6) => {
  * @param  {Array} deals
  */
 const renderDeals = deals => {
+  if (!deals.length) {
+    sectionDeals.innerHTML = '';
+    sectionDeals.innerHTML = '<h2>Deals</h2><p>No deals found</p>';
+    return;
+  }
+  else {
   const fragment = document.createDocumentFragment();
   const div = document.createElement('div');
   const template = deals
@@ -221,6 +227,7 @@ const renderDeals = deals => {
       favoriteDealIds = favoriteDealIds.filter(id => id !== dealId);
     }
   };
+  }
 };
 
 
@@ -354,32 +361,52 @@ function sortDealsByDiscount(list) {
   let sortedDeals = list.sort((a, b) => b.discount - a.discount);
   return sortedDeals;
 }
+/**BUTTON LISTENERS */
+function buttonChangeState(button) {
+  if(button.state === 'off'){
+    button.src = '../images/toggle-on.png';
+    button.state = 'on';
+  }
+  else{
+    button.src = '../images/toggle-off.png';
+    button.state = 'off';
+  }
+}
 /**
  * order by the discount desc and display only the deals with a discount >50
  */
+
 buttonBestDiscount.addEventListener('click', async () => {
   const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
   setCurrentDeals(deals);
-  currentDeals = sortDealsByDiscount(currentDeals).filter(deal => deal.discount >= 50);
-  console.table(currentDeals)
+  buttonChangeState(buttonBestDiscount);
+  if(buttonBestDiscount.state === 'on'){
+    currentDeals = sortDealsByDiscount(currentDeals).filter(deal => deal.discount >= 50);
+  }
+
   render(currentDeals, currentPagination);
-})
+  
+});
 
 buttonMostCommented.addEventListener('click', async () => {
   const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
   setCurrentDeals(deals);
-  currentDeals = currentDeals.filter(deal => deal.comments >= 15);
-  console.log('Sorted by Most commented !')
-  console.table(currentDeals)
+  buttonChangeState(buttonMostCommented);
+  if(buttonMostCommented.state === 'on'){
+    currentDeals = currentDeals.filter(deal => deal.comments >= 15);;
+  }
+  console.log('Sorted by Most commented !');
   render(currentDeals, currentPagination);
 })
 
 buttonHotDeals.addEventListener('click', async () => {
   const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
   setCurrentDeals(deals);
-  currentDeals = currentDeals.filter(deal => deal.temperature >= 100);
-  console.log('Sorted by Hot deals !')
-  console.table(currentDeals)
+  buttonChangeState(buttonHotDeals);
+  if(buttonHotDeals.state === 'on'){
+    currentDeals = currentDeals.filter(deal => deal.temperature >= 100);
+  }
+  console.log('Sorted by Hot deals !');
   render(currentDeals, currentPagination);
 })
 
@@ -387,9 +414,11 @@ buttonHotDeals.addEventListener('click', async () => {
 buttonFavoriteDeals.addEventListener('click', async () => {
   const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
   setCurrentDeals(deals);
-  currentDeals = currentDeals.filter(deal => favoriteDealIds.includes(deal.id));
+  buttonChangeState(buttonFavoriteDeals);
+  if(buttonFavoriteDeals.state === 'on'){
+    currentDeals = currentDeals.filter(deal => favoriteDealIds.includes(deal.id));
+  }
   console.log('Sorted by Favorite deals !')
-  console.table(currentDeals)
   render(currentDeals, currentPagination);
 })
 

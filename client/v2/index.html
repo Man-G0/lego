@@ -1,111 +1,171 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <title>🧱 Lego | Predictability of a lego set deal</title>
-    <style>
-      .row-container {
-        display: flex;
-        flex-direction: row;
-        gap: 20px; /* Optional: Adds space between columns */
-      }
-      .column-container {
-        display: flex;
-        flex-direction: column;
-        gap: 10px; /* Optional: Adds space between rows */
-      }
-      .item {
-        border: 1px solid #ccc;
-        padding: 10px;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Lego</h1>
-    <section id="options" class="row-container">
-      <div id="show">
-        <label for="show-select">Show:</label>
-        <select name="show" id="show-select">
-          <option value="6">6</option>
-          <option value="12">12</option>
-          <option value="24">24</option>
-        </select>
-      </div>
-      <div id="page">
-        <label for="page-select">Go to page:</label>
-        <select name="page" id="page-select"> </select>
-      </div>
-      <div id="filters">
-        <span>Filter:</span>
-        <button id="best-discount-button">Filter By best discount</button>
-        <button id="most-commented-button">Filter By most commented</button>
-        <button id="hot-deals-button">Filter By hot deals</button>
-        <button id="favorites-button">Filter By Favorites Deals</button>
-      </div>
-      <div id="sort">
-        <label for="sort-select">Sort:</label>
-        <select name="sort" id="sort-select">
-          <option value="price-asc">Cheaper</option>
-          <option value="price-desc">Expensive</option>
-          <option value="date-asc">Recently published</option>
-          <option value="date-desc">Anciently published</option>
-        </select>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>🧱 Lego | Predictability of a lego set deal</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    .column-container {
+      display: flex;
+      flex-direction: row;
+    }
+
+    .row-container {
+      display: flex;
+      flex-direction: column;
+
+    }
+
+    .item {
+      border: 1px solid #ccc;
+    }
+  </style>
+</head>
+
+<body>
+  <section class="row-container"
+    style="height: 100%;width: 100%; display: flex; align-items: center; justify-content: space-between; ">
+    <section class="row-container" id="banner"
+      style="flex: 3; display: flex; justify-content: flex-start; width: 100vw;background-color: #FFD502; margin: 0%">
+      <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+        <div style="flex: 1; display: flex; justify-content: flex-start;">
+          <img src="../images/brand-lego.svg" alt="Lego banner" style="width:5vw;margin: 2%;" />
+        </div>
+  
+        <div style="flex: 2; display: flex; justify-content: center; width: 100%;">
+          <h1>Lego Deals</h1>
+        </div>
+        <div style="flex: 1;"></div>
       </div>
     </section>
-    <section id="lego">
-      <h2>Lego sets</h2>
-      <div>
-        <label>Lego set id:</label>
-        <select id="lego-set-id-select"></select> 
-      </div>
-      <div>
-        <span>Lego set name:</span>
-        <span id="lego-set-name"></span>
-      </div>
-      <section id="vinted-sales">
-        <h3>Vinted Sales</h3>
+    <section class="row-container item" id="All-Content" style="flex: 9; display: flex;width: 100vw; margin-left: 3%;">
+        
+        <section class="column-container" id="deals-presentation"
+          style="display: flex; align-items: center; justify-content: space-between;width: 100%;">
+        
+          <section id="filters-sort-pagination" class="row-container"
+            style="flex:2; display: flex;margin:1%; background-color:#FFD502;">
+            <h1 style="align-self: center; font-size: large;">DealLabs Deals</h1>
+            <div id="filters" class="row-container" style="margin: 4%; margin-bottom: 20px;">
+              <span style="font-weight: bold;">Filter:</span>
+
+              <div id="best-discount-lbl" class="row-container" style="">
+                <span>Filter Discount >= 50% :</span>
+                <img id="best-discount-toggle" src="../images/toggle-off.png" alt="Toggle best discount filter"
+                  style="width: 40px; cursor: pointer;" state="off" />
+              </div>
+
+              <div id="most-commented-lbl" class="row-container">
+                <span>Filter Commented >= 15 times:</span>
+                <img id="most-commented-toggle" src="../images/toggle-off.png" alt="Toggle most commented filter"
+                  style="width: 40px; cursor: pointer;" state="off" />
+              </div>
+
+              <div id="hot-deals-button" class="row-container">
+                <span>Filter By Hot Deals:</span>
+                <img id="hot-deals-toggle" src="../images/toggle-off.png" alt="Toggle hot deals filter"
+                  style="width: 40px; cursor: pointer;" state="off" />
+              </div>
+
+              <div id="favorites-button" class="row-container">
+                <span>Filter By Favorites Deals:</span>
+                <img id="favorites-toggle" src="../images/toggle-off.png" alt="Toggle favorite deals filter"
+                  style="width: 40px; cursor: pointer;" state="off" />
+              </div>
+            </div>
+
+            <div id="sort" class="row-container" style="margin: 4%;">
+              <span style="font-weight: bold;">Sort:</span>
+              <label for="sort-select">Choose Sort Order:</label>
+              <select name="sort" id="sort-select" style="width: 10vw;">
+                <option value="price-asc">Cheaper</option>
+                <option value="price-desc">Expensive</option>
+                <option value="date-asc">Recently Published</option>
+                <option value="date-desc">Oldest Published</option>
+              </select>
+            </div>
+            <section id="pagination" class="row-container" style="flex:2; display: flex;margin: 4%; margin-bottom: 20px;">
+              <div id="show">
+                <label for="show-select">Show:</label>
+                <select name="show" id="show-select">
+                  <option value="6">6</option>
+                  <option value="12">12</option>
+                  <option value="24">24</option>
+                </select>
+              </div>
+              <div id="page">
+                <label for="page-select">Go to page:</label>
+                <select name="page" id="page-select"> </select>
+              </div>
+            </section>
+          </section>
+          
+
+          <section class="row-container" id="deals" style="flex:8; display: flex;"></section>
+
+        </section>
+      
+
+      <section id="lego">
+        <h2>Lego sets</h2>
         <div>
-          <span>Please choose a specific set</span>
-          <span id="vinted-list"></span>
+          <label>Lego set id:</label>
+          <select id="lego-set-id-select"></select>
+        </div>
+        <div>
+          <span>Lego set name:</span>
+          <span id="lego-set-name"></span>
+        </div>
+        <section id="vinted-sales">
+          <h3>Vinted Sales</h3>
+          <div>
+            <span>Please choose a specific set</span>
+            <span id="vinted-list"></span>
+        </section>
       </section>
+      <section id="indicators">
+        <h2>Indicators</h2>
+        <div>
+          <span>Number of deals</span>
+          <span id="nbDeals">0</span>
+        </div>
+        <div>
+          <span>Number of sales</span>
+          <span id="nbSales">0</span>
+        </div>
+        <div>
+          <span>Average</span>
+          <span id="average-price">0</span>
+        </div>
+        <div>
+          <span>p5 sales price value</span>
+          <span id="p5-sale-price">0</span>
+        </div>
+        <div>
+          <span>p25 sales price value</span>
+          <span id="p25-sale-price">0</span>
+        </div>
+        <div>
+          <span>p50 sales price value</span>
+          <span id="p50-sale-price">0</span>
+        </div>
+        <div>
+          <span>Oldest Sale Offer or lifetime value: </span>
+          <span id="lifetime-value"></span>
+        </div>
+        <div>
+          <span>Most Recent Sale Offer: </span>
+          <span id="recent-value"></span>
+        </div>
+      </section>
+      <script type="text/javascript" charset="UTF-8" src="utils.js"></script>
+      <script type="text/javascript" charset="UTF-8" src="portfolio.js"></script>
     </section>
-    <section id="indicators">
-      <h2>Indicators</h2>
-      <div>
-        <span>Number of deals</span>
-        <span id="nbDeals">0</span>
-      </div>
-      <div>
-        <span>Number of sales</span>
-        <span id="nbSales">0</span>
-      </div>
-      <div>
-        <span>Average</span>
-        <span id="average-price">0</span>
-      </div>
-      <div>
-        <span >p5 sales price value</span>
-        <span id="p5-sale-price">0</span>
-      </div>
-      <div>
-        <span >p25 sales price value</span>
-        <span id="p25-sale-price">0</span>
-      </div>
-      <div>
-        <span >p50 sales price value</span>
-        <span id="p50-sale-price">0</span>
-      </div>
-      <div>
-        <span>Oldest Sale Offer or lifetime value: </span>
-        <span id = "lifetime-value"></span>
-      </div>
-      <div>
-        <span>Most Recent Sale Offer: </span>
-        <span id = "recent-value"></span>
-      </div>
-    </section>
-    <section id="deals"></section>
-    <script type="text/javascript" charset="UTF-8" src="utils.js"></script>
-    <script type="text/javascript" charset="UTF-8" src="portfolio.js"></script>
-  </body>
+  </section>
+</body>
+
 </html>
