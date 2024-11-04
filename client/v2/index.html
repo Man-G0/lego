@@ -5,8 +5,15 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <title>🧱 Lego | Predictability of a lego set deal</title>
   <style>
+    html,
     body {
       font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      background-color: rgb(235, 235, 235);
     }
 
     .column-container {
@@ -20,6 +27,29 @@
 
     }
 
+    .deals-container {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2%;
+      width: 96%;
+
+    }
+
+    /* Style for each deal item */
+    .deal {
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 10px;
+      text-align: center;
+      background-color: #fff;
+    }
+
+    .deal img.deal-image {
+      max-width: 100%;
+      height: auto;
+    }
+
+
     .item {
       border: 1px solid #ccc;
     }
@@ -30,142 +60,106 @@
   <section class="row-container"
     style="height: 100%;width: 100%; display: flex; align-items: center; justify-content: space-between; ">
     <section class="row-container" id="banner"
-      style="flex: 3; display: flex; justify-content: flex-start; width: 100vw;background-color: #FFD502; margin: 0%">
-      <div style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+      style="flex: 3; display: flex; justify-content: flex-start; max-height: 15vh; width: 100vw;background-color: #FFD502; margin: 0%">
+      <div style="display: flex; align-items: center; justify-content:  space-between; width: 100%;">
         <div style="flex: 1; display: flex; justify-content: flex-start;">
-          <img src="../images/brand-lego.svg" alt="Lego banner" style="width:5vw;margin: 2%;" />
+          <img src="../images/brand-lego.svg" alt="Lego banner" style="max-height: 10vh; width: auto; margin: 2%;" />
         </div>
-  
+
         <div style="flex: 2; display: flex; justify-content: center; width: 100%;">
           <h1>Lego Deals</h1>
         </div>
         <div style="flex: 1;"></div>
       </div>
     </section>
-    <section class="row-container item" id="All-Content" style="flex: 9; display: flex;width: 100vw; margin-left: 3%;">
-        
-        <section class="column-container" id="deals-presentation"
-          style="display: flex; align-items: center; justify-content: space-between;width: 100%;">
-        
-          <section id="filters-sort-pagination" class="row-container"
-            style="flex:2; display: flex;margin:1%; background-color:#FFD502;">
-            <h1 style="align-self: center; font-size: large;">DealLabs Deals</h1>
-            <div id="filters" class="row-container" style="margin: 4%; margin-bottom: 20px;">
-              <span style="font-weight: bold;">Filter:</span>
+    <section class="row-container item" id="All-Content"
+      style="flex: 9; display: flex;width: 100%;height: 100%; margin: 0%;">
+      <section class="column-container" id="deals-presentation"
+        style="flex : none; align-items:start; justify-content: space-between;gap: 1%;width: 100%;height: 85%; margin: 1%; ">
 
-              <div id="best-discount-lbl" class="row-container" style="">
-                <span>Filter Discount >= 50% :</span>
-                <img id="best-discount-toggle" src="../images/toggle-off.png" alt="Toggle best discount filter"
-                  style="width: 40px; cursor: pointer;" state="off" />
-              </div>
+        <section id="filters-sort-pagination" class="row-container"
+          style="width: 20%; background-color:#FFD502; height: 100%;border-radius: 5px; display: flex; justify-content: space-evenly; flex-direction: column; ">
+          <h1 style="align-self: center; font-size: large;">DealLabs Deals</h1>
+          <div id="filters" class="row-container" style="margin-left: 4%; margin-bottom: 20px; flex :4;">
+            <span style="font-weight: bold;">Filter:</span>
 
-              <div id="most-commented-lbl" class="row-container">
-                <span>Filter Commented >= 15 times:</span>
-                <img id="most-commented-toggle" src="../images/toggle-off.png" alt="Toggle most commented filter"
-                  style="width: 40px; cursor: pointer;" state="off" />
-              </div>
-
-              <div id="hot-deals-button" class="row-container">
-                <span>Filter By Hot Deals:</span>
-                <img id="hot-deals-toggle" src="../images/toggle-off.png" alt="Toggle hot deals filter"
-                  style="width: 40px; cursor: pointer;" state="off" />
-              </div>
-
-              <div id="favorites-button" class="row-container">
-                <span>Filter By Favorites Deals:</span>
-                <img id="favorites-toggle" src="../images/toggle-off.png" alt="Toggle favorite deals filter"
-                  style="width: 40px; cursor: pointer;" state="off" />
-              </div>
+            <div id="best-discount-lbl" class="row-container">
+              <span>Filter Discount >= 50% :</span>
+              <img id="best-discount-toggle" src="../images/toggle-off.png" alt="Toggle best discount filter"
+                style="width: 40px; cursor: pointer;" state="off" />
             </div>
 
-            <div id="sort" class="row-container" style="margin: 4%;">
-              <span style="font-weight: bold;">Sort:</span>
-              <label for="sort-select">Choose Sort Order:</label>
-              <select name="sort" id="sort-select" style="width: 10vw;">
-                <option value="price-asc">Cheaper</option>
-                <option value="price-desc">Expensive</option>
-                <option value="date-asc">Recently Published</option>
-                <option value="date-desc">Oldest Published</option>
+            <div id="most-commented-lbl" class="row-container">
+              <span>Filter Commented >= 15 times:</span>
+              <img id="most-commented-toggle" src="../images/toggle-off.png" alt="Toggle most commented filter"
+                style="width: 40px; cursor: pointer;" state="off" />
+            </div>
+
+            <div id="hot-deals-button" class="row-container">
+              <span>Filter By Hot Deals:</span>
+              <img id="hot-deals-toggle" src="../images/toggle-off.png" alt="Toggle hot deals filter"
+                style="width: 40px; cursor: pointer;" state="off" />
+            </div>
+
+            <div id="favorites-button" class="row-container">
+              <span>Filter By Favorites Deals:</span>
+              <img id="favorites-toggle" src="../images/toggle-off.png" alt="Toggle favorite deals filter"
+                style="width: 40px; cursor: pointer;" state="off" />
+            </div>
+          </div>
+          <div id="sort" class="row-container" style="margin: 4%; flex :3;">
+            <span style="font-weight: bold;">Sort:</span>
+            <label for="sort-select">Choose Sort Order:</label>
+            <select name="sort" id="sort-select" style="width: 10vw;">
+              <option value="price-asc">Cheaper</option>
+              <option value="price-desc">Expensive</option>
+              <option value="date-asc">Recently Published</option>
+              <option value="date-desc">Oldest Published</option>
+            </select>
+          </div>
+          <section id="pagination" class="row-container"
+            style="flex:2; display: flex;margin: 4%; margin-bottom: 20px;  align-self: center">
+            <div>
+              <span id="nbDeals">0</span>
+              <span> deals in total</span>
+            </div>
+            <div id="show">
+              <label for="show-select">Show:</label>
+              <select name="show" id="show-select">
+                <option value="6" selected>6</option>
+                <option value="12">12</option>
+                <option value="24">24</option>
               </select>
             </div>
-            <section id="pagination" class="row-container" style="flex:2; display: flex;margin: 4%; margin-bottom: 20px;">
-              <div id="show">
-                <label for="show-select">Show:</label>
-                <select name="show" id="show-select">
-                  <option value="6">6</option>
-                  <option value="12">12</option>
-                  <option value="24">24</option>
-                </select>
-              </div>
-              <div id="page">
-                <label for="page-select">Go to page:</label>
-                <select name="page" id="page-select"> </select>
-              </div>
-            </section>
+            <div id="page">
+              <label for="page-select">Go to page:</label>
+              <select name="page" id="page-select"> </select>
+            </div>
           </section>
-          
-
-          <section class="row-container" id="deals" style="flex:8; display: flex;"></section>
-
         </section>
+        <section class="row-container" id="deals" style="width: 80%; height: 100%; align-self: center;">
+          <div class="deals-container" style="overflow-y:scroll;height: 100%;padding-top: 1%;padding-bottom: 1%;;">
+            <!-- Deals here -->
+          </div>
+        </section>
+      </section>
       
-
-      <section id="lego">
-        <h2>Lego sets</h2>
-        <div>
-          <label>Lego set id:</label>
-          <select id="lego-set-id-select"></select>
-        </div>
-        <div>
-          <span>Lego set name:</span>
-          <span id="lego-set-name"></span>
-        </div>
-        <section id="vinted-sales">
-          <h3>Vinted Sales</h3>
-          <div>
-            <span>Please choose a specific set</span>
-            <span id="vinted-list"></span>
-        </section>
-      </section>
-      <section id="indicators">
-        <h2>Indicators</h2>
-        <div>
-          <span>Number of deals</span>
-          <span id="nbDeals">0</span>
-        </div>
-        <div>
-          <span>Number of sales</span>
-          <span id="nbSales">0</span>
-        </div>
-        <div>
-          <span>Average</span>
-          <span id="average-price">0</span>
-        </div>
-        <div>
-          <span>p5 sales price value</span>
-          <span id="p5-sale-price">0</span>
-        </div>
-        <div>
-          <span>p25 sales price value</span>
-          <span id="p25-sale-price">0</span>
-        </div>
-        <div>
-          <span>p50 sales price value</span>
-          <span id="p50-sale-price">0</span>
-        </div>
-        <div>
-          <span>Oldest Sale Offer or lifetime value: </span>
-          <span id="lifetime-value"></span>
-        </div>
-        <div>
-          <span>Most Recent Sale Offer: </span>
-          <span id="recent-value"></span>
-        </div>
-      </section>
       <script type="text/javascript" charset="UTF-8" src="utils.js"></script>
       <script type="text/javascript" charset="UTF-8" src="portfolio.js"></script>
     </section>
   </section>
+  <!-- Popup -->
+  <div id="vinted-modal"
+    style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: white; border: 1px solid #ccc; padding: 20px; z-index: 1000;">
+    <h2>Vinted Sales for LEGO Set</h2>
+    <div id="vinted-sales-content"></div>
+    <button id="close-modal" style="margin-top: 10px;">Close</button>
+  </div>
+
+  <div id="modal-overlay"
+    style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 999;">
+  </div>
+
 </body>
 
 </html>

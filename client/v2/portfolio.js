@@ -22,7 +22,7 @@ This endpoint accepts the following optional query string parameters:
 */
 // current deals on the page
 let currentDeals = [];
-let currentSales = [];
+
 let currentPagination = {};
 
 let favoriteDealIds = [];
@@ -30,13 +30,11 @@ let favoriteDealIds = [];
 // instantiate the selectors
 const selectShow = document.querySelector('#show-select');
 const selectPage = document.querySelector('#page-select');
-const selectLegoSetIds = document.querySelector('#lego-set-id-select');
 const spanLegoSetName = document.querySelector('#lego-set-name');
 const selectSort = document.querySelector('#sort-select');
 const sectionDeals = document.querySelector('#deals');
-const sectionVintedSales = document.querySelector('#vinted-sales');
 const spanNbDeals = document.querySelector('#nbDeals');
-const spanNbSales = document.querySelector('#nbSales');
+const sectionVintedSales = document.querySelector('#vinted-sales');
 const buttonBestDiscount = document.querySelector('#best-discount-toggle')
 const buttonMostCommented = document.querySelector('#most-commented-toggle');
 const buttonHotDeals = document.querySelector('#hot-deals-toggle');
@@ -54,9 +52,8 @@ const average = document.querySelector('#average-price');
  */
 
 
-const setCurrentDeals = ({ result, meta, sales }) => {
+const setCurrentDeals = ({ result, meta }) => {
   currentDeals = result;
-  currentSales = sales;
   currentPagination = meta;
 };
 
@@ -81,9 +78,6 @@ const fetchSales = async id => {
 };
 
 const durationSince = (date) => {
-  console.log(date);
-  console.log(new Date());
-  console.log(new Date(date * 1000));
   date = (new Date().getTime() - date * 1000) / 1000;
   const months = Math.floor(date / 60 / 60 / 24 / 30);
   const remainingDays = Math.floor(date / 60 / 60 / 24 % 30.4);
@@ -104,45 +98,6 @@ const formatageDate = (date) => {
   return `${String(date.getDay()).padStart(2, '0')}/${String(date.getMonth()).padStart(2, '0')}/${date.getFullYear()}`;
 }
 
-const renderVintedSales = () => {
-  if (!currentSales.length) {
-    sectionVintedSales.innerHTML = '';
-    sectionVintedSales.innerHTML = '<h2>Vinted Sales</h2><p>Please choose a specific set</p>';
-    return;
-  }
-  else {
-    const fragment = document.createDocumentFragment();
-    const div = document.createElement('div');
-    const oldestLifetimeValue = currentSales.map(sale => sale.published).sort((a, b) => a - b)[0];
-    const oldestDuration = durationSince(oldestLifetimeValue);
-
-    document.querySelector('#lifetime-value').innerHTML = oldestDuration;
-    document.querySelector('#lifetime-value').append(' ago');
-
-    document.querySelector('#recent-value').innerHTML = durationSince(currentSales.map(sale => sale.published).sort((a, b) => b - a)[0]);
-    document.querySelector('#recent-value').append(' ago');
-
-    const template = currentSales
-      .map(sale => {
-        return `
-      <div class="sale" id=${sale.uuid}>
-        <span>${formatageDate(sale.published)}</span>
-        <a href="${sale.link}" target="_blank">${sale.title}</a>
-        <span>${sale.price}</span>
-        <span>${durationSince(sale.published)} ago </span>
-      </div>
-    `;
-      })
-      .join('');
-
-    div.innerHTML = template;
-    sectionVintedSales.innerHTML = '<h2>Vinted Sales</h2>';
-    fragment.appendChild(div);
-    sectionVintedSales.appendChild(fragment);
-  }
-
-
-};
 
 /**
  * Fetch deals from api
@@ -174,61 +129,80 @@ const fetchDeals = async (page = 1, size = 6) => {
  * @param  {Array} deals
  */
 const renderDeals = deals => {
+  const dealsContainer = sectionDeals.querySelector('.deals-container');
+  dealsContainer.innerHTML = ''; // Clear previous deals
   if (!deals.length) {
-    sectionDeals.innerHTML = '';
-    sectionDeals.innerHTML = '<h2>Deals</h2><p>No deals found</p>';
+    dealsContainer.innerHTML = '<h2>No deals found</h2>';
     return;
-  }
-  else {
-  const fragment = document.createDocumentFragment();
-  const div = document.createElement('div');
-  const template = deals
-    .map(deal => {
-      return `
-      <div class="deal" id=${deal.uuid}>
-        <span>${deal.id}</span>
-        <a href="${deal.link}" target="_blank">${deal.title}</a>
-        <span>${deal.price}</span>
-        <img 
-          src="${favoriteDealIds.includes(deal.id) ? '../images/star.png' : '../images/empty-star.png'}" 
-          class="favorite-icon" 
-          deal-id="${deal.id}" 
-          alt="Add to favorites" 
-          style="width: 20px; cursor: pointer;"
-        />
-      </div>
-    `;
-    })
-    .join('');
+  } else {
+    const fragment = document.createDocumentFragment(); // Create a fragment for better performance
 
-  div.innerHTML = template;
-  fragment.appendChild(div);
-  sectionDeals.innerHTML = '<h2>Deals</h2>';
-  sectionDeals.appendChild(fragment);
+    deals.forEach(deal => {
+      const dealDiv = document.createElement('div');
+      dealDiv.classList.add('deal');
+      dealDiv.innerHTML = `
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; ">
+            <div style="width: 100%; display: flex; justify-content: end;">
+            <img 
+              src="${favoriteDealIds.includes(deal.id) ? '../images/star.png' : '../images/empty-star.png'}" 
+              class="favorite-icon" 
+              deal-id="${deal.id}" 
+              alt="Add to favorites" 
+              style="width: 40px; cursor: pointer; margin-bottom: 5px;"
+            />
+            <button class= "plus-button" style="width: 40px; cursor: pointer; font-size: small;" deal-id="${deal.id}">+</button>
+          </div>
+          <img src="${deal.photo}" alt="${deal.title}" class="deal-image" style="width: 90%; max-width: 90%;" />
+        </div>
 
-  const favoriteIcons = div.querySelectorAll('.favorite-icon');
-  favoriteIcons.forEach(icon => {
-    icon.addEventListener('click', (event) => {
-      console.log(event.target.getAttribute('deal-id'));
-      const dealId = event.target.getAttribute('deal-id');
-      toggleFavorite(event.target, dealId);
+        <div style="text-align: center; margin-top: 10px;flex-grow: 1;">
+          <span>Set ID: ${deal.id}</span><br />
+          <a href="${deal.link}" target="_blank" style="display: block; margin-top: 5px;">${deal.title}</a>
+          <span style="display: block; margin-top: 5px;">${deal.price} €</span>
+          <span style="display: block; margin-top: 5px;">${deal.discount}% discount</span>
+        </div>
+      `;
+      // Fetch the price indicators and update the comments span after the dealDiv is appended
+
+
+      fragment.appendChild(dealDiv); // Append to fragment
+
     });
-  });
 
-  const toggleFavorite = (icon, dealId) => {
-    if (icon.src.includes('empty-star.png')) {
-      icon.src = '../images/star.png'; // Path to filled star
-      console.log(`Deal ${dealId} added to favorites`);
-      favoriteDealIds.push(dealId);
-    } else {
-      icon.src = '../images/empty-star.png'; // Path to empty star
-      console.log(`Deal ${dealId} removed from favorites`);
-      deals.find(deal => deal.uuid === dealId).favorite = false;
-      favoriteDealIds = favoriteDealIds.filter(id => id !== dealId);
-    }
-  };
+    dealsContainer.appendChild(fragment); // Append the entire fragment at once
+
+    attachEventListeners(dealsContainer);
   }
 };
+const attachEventListeners = (dealsContainer) => {
+  dealsContainer.querySelectorAll('.favorite-icon').forEach(icon => {
+    icon.addEventListener('click', () => {
+      const dealId = icon.getAttribute('deal-id');
+      toggleFavorite(icon, dealId);
+    });
+  });
+  dealsContainer.querySelectorAll('.plus-button').forEach(button => {
+    button.addEventListener('click', () => {
+      const dealId = button.getAttribute('deal-id');
+      openVintedSalesPopup(dealId);
+    });
+  });
+}
+
+const toggleFavorite = (icon, dealId) => {
+  if (icon.src.includes('empty-star.png')) {
+    icon.src = '../images/star.png'; // Path to filled star
+    console.log(`Deal ${dealId} added to favorites`);
+    favoriteDealIds.push(dealId);
+  } else {
+    icon.src = '../images/empty-star.png'; // Path to empty star
+    console.log(`Deal ${dealId} removed from favorites`);
+    // Ensure you use the correct property to find the deal, consider using `deal.id` instead of `deal.uuid`
+    deals.find(deal => deal.id === dealId).favorite = false;
+    favoriteDealIds = favoriteDealIds.filter(id => id !== dealId);
+  }
+};
+
 
 
 
@@ -247,17 +221,6 @@ const renderPagination = pagination => {
   selectPage.selectedIndex = currentPage - 1;
 };
 
-/**
- * Render lego set ids selector
- * @param  {Array} lego set ids
- */
-const renderLegoSetIds = deals => {
-  const ids = getIdsFromDeals(deals);
-  const options = ['<option value="">All Sets</option>']
-    .concat(ids.map(id => `<option value="${id}">${id}</option>`))
-    .join('');
-  selectLegoSetIds.innerHTML = options;
-};
 
 /**
  * Render page selector
@@ -265,7 +228,6 @@ const renderLegoSetIds = deals => {
  */
 const renderIndicators = pagination => {
   const { count } = pagination;
-
   spanNbDeals.innerHTML = count;
 };
 
@@ -273,18 +235,21 @@ const render = (deals, pagination) => {
   renderDeals(deals);
   renderPagination(pagination);
   renderIndicators(pagination);
-  renderLegoSetIds(deals)
 };
-const calculatePriceIndicators = () => {
-  if (!currentSales.length) {
-    return { average: 0, p5: 0, p25: 0, p50: 0 };
+const calculatePriceIndicators = (sales) => {
+  if (!sales.length) {
+    return { numberOfSales: 0, oldestDuration: 0, average: 0, p5: 0, p25: 0, p50: 0 };
   } else {
-    const prices = currentSales.map(sale => parseFloat(sale.price)).sort((a, b) => a - b);
-    const avg = prices.reduce((sum, price) => sum + price, 0) / prices.length;
-    const p5 = prices[Math.floor(prices.length * 0.05)];
-    const p25 = prices[Math.floor(prices.length * 0.25)];
-    const p50 = prices[Math.floor(prices.length * 0.50)];
-    return { avg, p5, p25, p50 };
+    const numberOfSales = sales.length + 1;
+    const oldestLifetimeValue = sales.map(sale => sale.published).sort((a, b) => a - b)[0];
+    const oldestDuration = durationSince(oldestLifetimeValue);
+    const mostRecentOffer = durationSince(sales.map(sale => sale.published).sort((a, b) => b - a)[0]);
+    const prices = sales.map(sale => parseFloat(sale.price)).sort((a, b) => a - b);
+    const avg = (prices.reduce((sum, price) => sum + price, 0) / prices.length).toFixed(2);
+    const p5 = prices[Math.floor(prices.length * 0.05)].toFixed(2);
+    const p25 = prices[Math.floor(prices.length * 0.25)].toFixed(2);
+    const p50 = prices[Math.floor(prices.length * 0.50)].toFixed(2);
+    return { numberOfSales, mostRecentOffer, oldestDuration, avg, p5, p25, p50 };
   }
 
 
@@ -302,7 +267,6 @@ const calculatePriceIndicators = () => {
 
 document.addEventListener('DOMContentLoaded', async () => {
   const deals = await fetchDeals();
-  const sales = await fetchSales();
 
   setCurrentDeals(deals);
   render(currentDeals, currentPagination);
@@ -321,53 +285,18 @@ selectShow.addEventListener('change', async (event) => {
   render(currentDeals, currentPagination);
 });
 
-const displayPriceIndicators = ({ avg, p5, p25, p50 }) => {
-  average.innerHTML = avg.toFixed(2);
-  spanP5.innerHTML = p5.toFixed(2);
-  spanP25.innerHTML = p25.toFixed(2);
-  spanP50.innerHTML = p50.toFixed(2);
 
-};
-
-selectLegoSetIds.addEventListener('change', async (event) => {
-  const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
-
-  setCurrentDeals(deals);
-  const selectedId = event.target.value;
-  if (selectedId != '') {
-    const sales = await fetchSales(event.target.value);
-    spanLegoSetName.innerHTML = deals.result.find(deal => deal.id === event.target.value).title;
-    currentSales = sales.result;
-    const priceIndicators = calculatePriceIndicators(sales);
-    displayPriceIndicators(priceIndicators);
-
-    spanNbSales.innerHTML = sales.result.length;
-    currentDeals = currentDeals.filter(deal => deal.id === event.target.value);
-    renderVintedSales();
-  }
-  else {
-    spanLegoSetName.innerHTML = '';
-    spanNbSales.innerHTML = 0;
-    currentSales = [];
-    renderVintedSales();
-
-    displayPriceIndicators({ avg: 0, p5: 0, p25: 0, p50: 0 });
-  }
-
-  render(currentDeals, currentPagination);
-  selectLegoSetIds.value = selectedId;
-});
 function sortDealsByDiscount(list) {
   let sortedDeals = list.sort((a, b) => b.discount - a.discount);
   return sortedDeals;
 }
 /**BUTTON LISTENERS */
 function buttonChangeState(button) {
-  if(button.state === 'off'){
+  if (button.state === 'off') {
     button.src = '../images/toggle-on.png';
     button.state = 'on';
   }
-  else{
+  else {
     button.src = '../images/toggle-off.png';
     button.state = 'off';
   }
@@ -380,19 +309,19 @@ buttonBestDiscount.addEventListener('click', async () => {
   const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
   setCurrentDeals(deals);
   buttonChangeState(buttonBestDiscount);
-  if(buttonBestDiscount.state === 'on'){
+  if (buttonBestDiscount.state === 'on') {
     currentDeals = sortDealsByDiscount(currentDeals).filter(deal => deal.discount >= 50);
   }
 
   render(currentDeals, currentPagination);
-  
+
 });
 
 buttonMostCommented.addEventListener('click', async () => {
   const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
   setCurrentDeals(deals);
   buttonChangeState(buttonMostCommented);
-  if(buttonMostCommented.state === 'on'){
+  if (buttonMostCommented.state === 'on') {
     currentDeals = currentDeals.filter(deal => deal.comments >= 15);;
   }
   console.log('Sorted by Most commented !');
@@ -403,7 +332,7 @@ buttonHotDeals.addEventListener('click', async () => {
   const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
   setCurrentDeals(deals);
   buttonChangeState(buttonHotDeals);
-  if(buttonHotDeals.state === 'on'){
+  if (buttonHotDeals.state === 'on') {
     currentDeals = currentDeals.filter(deal => deal.temperature >= 100);
   }
   console.log('Sorted by Hot deals !');
@@ -415,7 +344,7 @@ buttonFavoriteDeals.addEventListener('click', async () => {
   const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
   setCurrentDeals(deals);
   buttonChangeState(buttonFavoriteDeals);
-  if(buttonFavoriteDeals.state === 'on'){
+  if (buttonFavoriteDeals.state === 'on') {
     currentDeals = currentDeals.filter(deal => favoriteDealIds.includes(deal.id));
   }
   console.log('Sorted by Favorite deals !')
@@ -440,8 +369,73 @@ selectSort.addEventListener('change', async (event) => {
       break;
   }
   console.log(`Sorted by ${event.target.value}!`)
-  console.table(currentDeals)
   render(currentDeals, currentPagination);
 });
+
+
+/*for the popup*/
+
+const vintedIndicators = async (legoSetId) => {
+  const sales = await fetchSales(legoSetId);
+  return calculatePriceIndicators(sales.result);
+}
+const openVintedSalesPopup = async (legoSetId) => {
+  const sales = await fetchSales(legoSetId);
+
+  const vintedSalesContent = document.getElementById('vinted-sales-content');
+  vintedSalesContent.innerHTML = ''; // Clear previous content
+
+  if (sales.length === 0) {
+    vintedSalesContent.innerHTML = '<p>No Vinted sales found for this LEGO set.</p>';
+  } else {
+    const indicators = await calculatePriceIndicators(sales.result);
+
+
+    const oldestDuration = indicators.oldestDuration;
+    const mostRecentOffer = indicators.mostRecentOffer;
+
+    const avg = indicators.avg;
+    const p5 = indicators.p5;
+    const p25 = indicators.p25;
+    const p50 = indicators.p50;
+    vintedSalesContent.innerHTML += `
+          <div style="text-align: center; margin-top: 10px;">
+            <H3>Vinted Sales</h3>
+            <span>Number of sales: ${indicators.numberOfSales},</span>
+            <span>Average: ${avg} €,</span>
+            <span>P5: ${p5} €,</span>
+            <span>P25: ${p25} €,</span>
+            <span>P50: ${p50} €</span> <br />
+            <span>Oldest offer: ${oldestDuration} ago</span>
+            <span>Most recent offer: ${mostRecentOffer} ago</span><br /><br />
+          </div>
+        `;
+
+    sales.result.forEach(sale => {
+      vintedSalesContent.innerHTML += `
+              <div class="sale">
+                  <span>${formatageDate(sale.published)}</span>
+                  <a href="${sale.link}" target="_blank">${sale.title}</a>
+                  <span>${sale.price} €</span>
+                  <span>${durationSince(sale.published)} ago</span>
+              </div>
+          `;
+    });
+  }
+
+  document.getElementById('vinted-modal').style.display = 'block';
+  document.getElementById('modal-overlay').style.display = 'block';
+  document.getElementById('close-modal').addEventListener('click', () => {
+    document.getElementById('vinted-modal').style.display = 'none';
+    document.getElementById('modal-overlay').style.display = 'none';
+  });
+
+  document.getElementById('modal-overlay').addEventListener('click', () => {
+    document.getElementById('vinted-modal').style.display = 'none';
+    document.getElementById('modal-overlay').style.display = 'none';
+  });
+};
+
+
 
 
