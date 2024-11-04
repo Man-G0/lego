@@ -1,13 +1,12 @@
-const fetch = require('node-fetch');
 const cheerio = require('cheerio');
 
 /**
  * Parse webpage data response
- * @param  {String} data - html response
- * @return {Object} deal
+ * @param  {String} data - HTML response
+ * @return {Array} deals - Array of deal objects
  */
 const parse = data => {
-  const $ = cheerio.load(data, {'xmlMode': true});
+  const $ = cheerio.load(data, { xmlMode: true });
 
   return $('div.prods a')
     .map((i, element) => {
@@ -26,27 +25,33 @@ const parse = data => {
       return {
         discount,
         price,
-        'title': $(element).attr('title'),
+        title: $(element).attr('title'),
       };
     })
     .get();
 };
 
 /**
- * Scrape a given url page
- * @param {String} url - url to parse
- * @returns 
+ * Scrape a given URL page
+ * @param {String} url - URL to parse
+ * @returns {Array|null} Array of deals or null on error
  */
 module.exports.scrape = async url => {
-  const response = await fetch(url);
+  // Dynamically import 'node-fetch' within the function
+  const fetch = (await import('node-fetch')).default;
 
-  if (response.ok) {
-    const body = await response.text();
+  try {
+    const response = await fetch(url);
 
-    return parse(body);
+    if (response.ok) {
+      const body = await response.text();
+      return parse(body);
+    } else {
+      console.error(`Error: Received status ${response.status} from ${url}`);
+      return null;
+    }
+  } catch (error) {
+    console.error(`Error fetching data from ${url}:`, error);
+    return null;
   }
-
-  console.error(response);
-
-  return null;
 };
