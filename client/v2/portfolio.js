@@ -142,16 +142,16 @@ const renderDeals = deals => {
       dealDiv.classList.add('deal');
       dealDiv.innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; ">
-            <div style="width: 100%; display: flex; justify-content: end;">
+            <div style="width: 100%; display: flex; flex-direction: row;justify-content: space-between;">
             <img 
               src="${favoriteDealIds.includes(deal.id) ? '../images/star.png' : '../images/empty-star.png'}" 
               class="favorite-icon" 
               deal-id="${deal.id}" 
               alt="Add to favorites" 
-              style="width: 40px; cursor: pointer; margin-bottom: 5px;"
+              style="width: 13%; cursor: pointer; margin-bottom: 5%;"
             />
-            <button class= "plus-button" style="width: 40px; cursor: pointer; font-size: small;" deal-id="${deal.id}">+</button>
-          </div>
+            <button class= "plus-button" style="width: 15%; cursor: pointer; font-size: small;" deal-id="${deal.id}">+</button>
+            </div>
           <img src="${deal.photo}" alt="${deal.title}" class="deal-image" style="width: 90%; max-width: 90%;" />
         </div>
 
@@ -191,14 +191,12 @@ const attachEventListeners = (dealsContainer) => {
 
 const toggleFavorite = (icon, dealId) => {
   if (icon.src.includes('empty-star.png')) {
-    icon.src = '../images/star.png'; // Path to filled star
+    icon.src = '../images/star.png';
     console.log(`Deal ${dealId} added to favorites`);
     favoriteDealIds.push(dealId);
   } else {
-    icon.src = '../images/empty-star.png'; // Path to empty star
+    icon.src = '../images/empty-star.png';
     console.log(`Deal ${dealId} removed from favorites`);
-    // Ensure you use the correct property to find the deal, consider using `deal.id` instead of `deal.uuid`
-    deals.find(deal => deal.id === dealId).favorite = false;
     favoriteDealIds = favoriteDealIds.filter(id => id !== dealId);
   }
 };
@@ -240,7 +238,7 @@ const calculatePriceIndicators = (sales) => {
   if (!sales.length) {
     return { numberOfSales: 0, oldestDuration: 0, average: 0, p5: 0, p25: 0, p50: 0 };
   } else {
-    const numberOfSales = sales.length + 1;
+    const numberOfSales = sales.length;
     const oldestLifetimeValue = sales.map(sale => sale.published).sort((a, b) => a - b)[0];
     const oldestDuration = durationSince(oldestLifetimeValue);
     const mostRecentOffer = durationSince(sales.map(sale => sale.published).sort((a, b) => b - a)[0]);
