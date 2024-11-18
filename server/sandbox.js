@@ -1,25 +1,43 @@
 /* eslint-disable no-console, no-process-exit */
+const fs = require('fs');
 const avenuedelabrique = require('./websites/avenuedelabrique');
 const deallabs = require('./websites/deallabs');
 const puppeteer = require('puppeteer');
 const vinted = require('./websites/vinted.js');
 
-async function sandbox (website) {
+async function sandbox() {
   try {
-    console.log(`🕵️‍♀️  browsing ${website} website`);
-    if (website.includes('deallabs')) {
-      const url = 'https://www.dealabs.com/groupe/lego?hide_expired=true';
-      const deals = await deallabs.scrape(url);
-      console.log(deals);
+    // Scraper les deals de Dealabs
+    const dealabsUrl = 'https://www.dealabs.com/groupe/lego?hide_expired=true';
+    const dealabsDeals = await deallabs.scrape(dealabsUrl);
+    console.log(`${dealabsDeals.length} deals found on Dealabs.`);
+
+    // Préparer Puppeteer pour scraper Vinted
+    const browser = await puppeteer.launch({ headless: true });
+    const combinedDeals = [];
+
+    for (const deal of dealabsDeals) {
+      console.log(`Searching Vinted deals for: ${deal.title}`);
+      
+      const vintedUrl = `https://www.vinted.fr/catalog?search_text=lego%20${deal.ID}&time=1730733272&page=1;`;
+
+      // Scraper les résultats correspondants sur Vinted
+      const vintedDeals = await vinted.scrape(vintedUrl, browser,);
+
+      combinedDeals.push({
+        dealabs: deal,
+        vinted: vintedDeals
+      });
     }
-    else if (website.includes('vinted')) {
-      const url ='https://www.vinted.fr/catalog?search_text=lego%20${ID}&time=1730733272&page=1;'
-      const browser = await puppeteer.launch({ headless: false });
-      const deals = await vinted.scrape(url, browser);
-      console.log(deals);
-      await browser.close();
-    }
-    console.log('done');
+
+    await browser.close();
+
+    // Enregistrer les résultats dans un fichier JSON
+    const outputPath = './combined_deals.json';
+    fs.writeFileSync(outputPath, JSON.stringify(combinedDeals, null, 2), 'utf-8');
+    console.log(`Deals saved to ${outputPath}`);
+
+    console.log('Done');
     process.exit(0);
   } catch (e) {
     console.error(e);
@@ -27,6 +45,5 @@ async function sandbox (website) {
   }
 }
 
-const [,, eshop] = process.argv;
 
-sandbox(eshop);
+sandbox();

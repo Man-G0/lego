@@ -79,7 +79,6 @@ module.exports.scrape = async (url, browser) => {
   }
   // Fetch Vinted deals using extracted ID
   const VintedDeals = await fetchDeals(extractedID, cookieString, page);
-  console.log(VintedDeals);
   
   if (Array.isArray(VintedDeals)) {
     const deals = VintedDeals.map((deal) => ({

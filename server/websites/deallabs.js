@@ -17,15 +17,17 @@ const parse = data => {
 
 $('div.js-vue2').each((_, element) => {
   const dataVue2 = $(element).attr('data-vue2');
+  
   if (dataVue2) {
     const data = JSON.parse(dataVue2);
 
     if (data.props && data.props.thread) {
       const thread = data.props.thread;
-
+      const titleExists = thread.title && thread.title.length > 0;
       const deal = {
         threadId: thread.threadId,
         title: thread.title,
+        ID : titleExists && thread.title.match(/\b\d{5}\b/)!=null ? thread.title.match(/\b\d{5}\b/)[0] : null,
         link: thread.link,
         merchant: thread.merchant ? thread.merchant.merchantName : 'Unknown',
         price: thread.price,
@@ -35,7 +37,6 @@ $('div.js-vue2').each((_, element) => {
         publishedAt: thread.publishedAt,
         mainImage: thread.mainImage ? `https://static.dealabs.com/${thread.mainImage.path}/${thread.mainImage.name}.${thread.mainImage.ext}` : null,
       };
-
       // Only add deals that have a title and link, indicating full data
       if (deal.title && deal.link) {
         deals.push(deal);
