@@ -21,8 +21,8 @@ const getVintedCookies = async (page) => {
  * @returns {Object|null} - Vinted deal data or null on error
  */
 // Fetch des offres depuis l'API Vinted
-const fetchDeals = async (id = "75368", cookieString, page) => {
-  const url = `https://www.vinted.fr/api/v2/catalog/items?page=1&per_page=96&time=1731770253&search_text=lego+${id}`;
+const fetchDeals = async (id = "", cookieString, page) => {
+  const url = `https://www.vinted.fr/api/v2/catalog/items?page=1&per_page=96&time=1731770253&search_text=${id}&brand_ids[]=89162`;
   try {
     console.log("Tentative de requête avec URL :", url);
 
@@ -64,28 +64,44 @@ const fetchDeals = async (id = "75368", cookieString, page) => {
  * @param {Object} browser - Puppeteer browser instance
  * @returns {Object|null} - Vinted deal data (price & title) or null on error
  */
-module.exports.scrape = async (url, browser) => {
+module.exports.scrape = async (id, browser) => {
   const page = await browser.newPage();
   const cookieString = await getVintedCookies(page);
   
-  const regex = /lego%20(\d+)/;
+  /*const regex = /lego%20(\d+)/;
   const match = url.match(regex);
   let extractedID = "";
   if (match) {
     extractedID = match[1];
-    console.log("Extracted ID:", extractedID);
+    console.log("Extracted ID:", id);
   } else {
     console.error("ID not found in the URL");
-  }
+  }*/
   // Fetch Vinted deals using extracted ID
-  const VintedDeals = await fetchDeals(extractedID, cookieString, page);
+  const VintedDeals = await fetchDeals(id, cookieString, page);
   
   if (Array.isArray(VintedDeals)) {
     const deals = VintedDeals.map((deal) => ({
+      id: deal.id,
       title: deal.title,
-      price: deal.price ? `${deal.price.amount} ${deal.price.currency}` : "N/A",
+      description: deal.description || null,
+      price: deal.price ? `${deal.price.amount} ${deal.price.currency_code}` : "N/A",
+      discount: deal.discount || null,
+      total_price: deal.total_item_price ? `${deal.total_item_price.amount} ${deal.total_item_price.currency_code}` : null,
+      brand: deal.brand_title || null,
+      condition: deal.status || "N/A",
+      promoted: deal.promoted,
+      location: deal.user ? deal.user.login : "Unknown",
+      profile_url: deal.user ? deal.user.profile_url : null,
+      created_at: deal.created_at_ts || null,
+      url: deal.url,
+      image: deal.photo ? deal.photo.url : null,
+      full_size_image: deal.photo ? deal.photo.full_size_url : null,
+      favourite_count: deal.favourite_count || 0,
+      view_count: deal.view_count || 0,
     }));
-
+    
+    
     await page.close();
     return deals;
   } else {
