@@ -5,6 +5,21 @@ const cheerio = require('cheerio');
  * @param  {String} data - HTML response
  * @return {Array} deals - Array of deal objects
  */
+
+// Fonction pour extraire le prix au bon format, en cas de format incorrect
+function formatPrice(price) {
+  if (typeof price === 'string') {
+    // Si le prix est au format "123.45 EUR", on garde la valeur numérique
+    const match = price.match(/^(\d+(\.\d+)?)\s?EUR$/);
+    if (match) {
+      return parseFloat(match[1]);
+    }
+  } else if (typeof price === 'number') {
+    return price;  // Si le prix est déjà un nombre, pas besoin de transformation
+  }
+  return null;  // Si le format n'est pas valide, retourner null
+}
+
 const parse = data => {
   const $ = cheerio.load(data, { decodeEntities: true });
 
@@ -34,8 +49,8 @@ const parse = data => {
           commentCount: thread.commentCount,
           status: thread.status,
           merchant: thread.merchant ? thread.merchant.merchantName : 'Unknown',
-          price: thread.price,
-          nextBestPrice: thread.nextBestPrice,
+          price: typeof thread.price === 'string' && thread.price.match(/(.*) EUR/) ? parseFloat(thread.price.match(/(.*) EUR/) [1].replace(',', '.')):thread.price, // ATTENTION J'AI MODIFIE ICI, PAS RETESTE
+          nextBestPrice: typeof thread.nextBestPrice === 'string' && thread.nextBestPrice.match(/(.*) EUR/) ? parseFloat(thread.nextBestPrice.match(/(.*) EUR/)[1].replace(',', '.')) : thread.nextBestPrice, // ATTENTION J'AI MODIFIE ICI, PAS RETESTEs
           temperature: thread.temperature,
           temperatureLevel: thread.temperatureLevel,
           commentCount: thread.commentCount,

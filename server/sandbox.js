@@ -18,6 +18,7 @@ async function sandbox() {
     // Préparer Puppeteer pour scraper Vinted
     const browser = await puppeteer.launch({ headless: true });
     const combinedDeals = [];
+    const combinedVinted = [];
     
     for (const deal of dealabsDeals) {   
       //const vintedUrl = `https://www.vinted.fr/catalog?search_text=${deal.ID}&time=1731934184&brand_ids[]=89162&page=1;`;
@@ -34,18 +35,22 @@ async function sandbox() {
 
       combinedDeals.push({
         dealabs: deal,
-        vinted: vintedDeals
       });
-      //console.log(JSON.stringify(combinedDeals, null, 2)); // Affiche bien la structure avant d'écrire dans le fichier
+      combinedVinted.push(...vintedDeals);
+      //console.log(JSON.stringify(combinedVinted, null, 2)); // Affiche bien la structure avant d'écrire dans le fichier
 
     }
 
     await browser.close();
 
     // Enregistrer les résultats dans un fichier JSON
-    const outputPath = './combined_deals.json';
-    fs.writeFileSync(outputPath, JSON.stringify(combinedDeals, null, 2), 'utf-8');
-    console.log(`Deals saved to ${outputPath}`);
+    const outputPathDeals = './combined_deals.json';
+    const outputPathVinted = './combined_vinted.json';
+
+    fs.writeFileSync(outputPathDeals, JSON.stringify(combinedDeals, null, 2), 'utf-8');
+    fs.writeFileSync(outputPathVinted, JSON.stringify(combinedVinted, null, 2), 'utf-8');
+    console.log(`Deals saved to ${outputPathDeals}`);
+    console.log(`Vinted sales saved to ${outputPathVinted}`);
 
     console.log('Done');
     process.exit(0);
