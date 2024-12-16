@@ -18,7 +18,7 @@ app.options('*', cors());
 
 function requestBase(request) {
   const page = parseInt(request.query.page) || 1; // Default to 1 if not provided
-  var tempLimit = parseInt(request.query.limit) || 10; // Default to 10 if not provided
+  var tempLimit = parseInt(request.query.size) || 10; // Default to 10 if not provided
   
 
   const {limit, offset}= paginateInfo.calculateLimitAndOffset(page, tempLimit);

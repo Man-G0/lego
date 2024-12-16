@@ -31,7 +31,7 @@ async function findDeals(priceMin, priceMax, startDate, endDate, sortBy, limit, 
     const { db, client } = await connectToDatabase();
 
     /* FILTERs */
-
+    query['dealabs.ID'] = { $exists: true, $ne: null }; // Filtre : ID du lego non null
     if (priceMin && priceMax) {
       query['dealabs.price'] = { $lt: priceMax, $gt: priceMin }; 
     } else if (priceMin) {
@@ -68,6 +68,7 @@ async function findDeals(priceMin, priceMax, startDate, endDate, sortBy, limit, 
     if (commentMin) {
       query['dealabs.commentCount'] = { $gte: commentMin };
     }
+    
     
     /* sort by */
     let sort = { 'dealabs.price': 1 };

@@ -52,30 +52,12 @@ const average = document.querySelector('#average-price');
  */
 
 
-const setCurrentDeals = ({ result, meta }) => {
-  currentDeals = result;
-  currentPagination = meta;
+const setCurrentDeals = ({ results, pagination }) => {
+  currentDeals = results;
+  currentPagination = pagination;
 };
 
-/**
- * Fetch numbers of sales for a given lego set id
- */
-const fetchSales = async id => {
-  try {
-    const response = await fetch(`https://lego-api-blue.vercel.app/sales?id=${id}`);
-    const body = await response.json();
 
-    if (body.success !== true) {
-      console.error(body);
-      return [];
-    }
-
-    return body.data;
-  } catch (error) {
-    console.error(error);
-    return [];
-  }
-};
 
 const durationSince = (date) => {
   date = (new Date().getTime() - date * 1000) / 1000;
@@ -105,10 +87,10 @@ const formatageDate = (date) => {
  * @param  {Number}  [size=12] - size of the page
  * @return {Object}
  */
-const fetchDeals = async (page = 1, size = 6) => {
+const fetchDeals = async (page = 1, size = 12) => {
   try {
     const response = await fetch(
-      `https://lego-api-blue.vercel.app/deals?page=${page}&size=${size}`
+      `https://lego-sigma-seven.vercel.app/deals/search?page=${page}&size=${size}`
     );
     const body = await response.json();
 
@@ -116,14 +98,32 @@ const fetchDeals = async (page = 1, size = 6) => {
       console.error(body);
       return { currentDeals, currentPagination };
     }
-
-    return body.data;
+    console.log(body);
+    return body;
   } catch (error) {
     console.error(error);
     return { currentDeals, currentPagination };
   }
 };
+/**
+ * Fetch sales for a given lego set id
+ */
+const fetchSales = async id => {
+  try {
+    const response = await fetch(`https://lego-sigma-seven.vercel.app/sales/search?legoSetId=${id}`);
+    const body = await response.json();
 
+    if (body.success !== true) {
+      console.error(body);
+      return [];
+    }
+
+    return body;
+  } catch (error) {
+    console.error(error);
+    return [];
+  }
+};
 /**
  * Render list of deals
  * @param  {Array} deals
@@ -139,27 +139,28 @@ const renderDeals = deals => {
 
     deals.forEach(deal => {
       const dealDiv = document.createElement('div');
+      const dealContent = deal.dealabs;
       dealDiv.classList.add('deal');
       dealDiv.innerHTML = `
         <div style="display: flex; flex-direction: column; align-items: center; justify-content: space-between; ">
             <div style="width: 100%; display: flex; flex-direction: row;justify-content: space-between;">
             <img 
-              src="${favoriteDealIds.includes(deal.id) ? '../images/star.png' : '../images/empty-star.png'}" 
+              src="${favoriteDealIds.includes(dealContent.ID) ? '../images/star.png' : '../images/empty-star.png'}" 
               class="favorite-icon" 
-              deal-id="${deal.id}" 
+              deal-id="${dealContent.ID}" 
               alt="Add to favorites" 
               style="width: 13%; cursor: pointer; margin-bottom: 5%;"
             />
-            <button class= "plus-button" style="width: 15%; cursor: pointer; font-size: small;" deal-id="${deal.id}">+</button>
+            <button class= "plus-button" style="width: 15%; cursor: pointer; font-size: small;" deal-id="${dealContent.ID}">+</button>
             </div>
-          <img src="${deal.photo}" alt="${deal.title}" class="deal-image" style="width: 90%; max-width: 90%;" />
+          <img src="${dealContent.mainImage}" alt="${dealContent.title}" class="deal-image" style="width: 90%; max-width: 90%;" />
         </div>
 
         <div style="text-align: center; margin-top: 10px;flex-grow: 1;">
-          <span>Set ID: ${deal.id}</span><br />
-          <a href="${deal.link}" target="_blank" style="display: block; margin-top: 5px;">${deal.title}</a>
-          <span style="display: block; margin-top: 5px;">${deal.price} €</span>
-          <span style="display: block; margin-top: 5px;">${deal.discount}% discount</span>
+          <span>Set ID: ${dealContent.ID}</span><br />
+          <a href="${dealContent.link}" target="_blank" style="display: block; margin-top: 5px;">${dealContent.title}</a>
+          <span style="display: block; margin-top: 5px;">${dealContent.price} €</span>
+          <span style="display: block; margin-top: 5px;">${dealContent.discount}% discount</span>
         </div>
       `;
       // Fetch the price indicators and update the comments span after the dealDiv is appended
@@ -174,6 +175,7 @@ const renderDeals = deals => {
     attachEventListeners(dealsContainer);
   }
 };
+
 const attachEventListeners = (dealsContainer) => {
   dealsContainer.querySelectorAll('.favorite-icon').forEach(icon => {
     icon.addEventListener('click', () => {
@@ -235,7 +237,7 @@ const render = (deals, pagination) => {
   renderIndicators(pagination);
 };
 const calculatePriceIndicators = (sales) => {
-  if (!sales.length) {
+  if (!sales) {
     return { numberOfSales: 0, oldestDuration: 0, average: 0, p5: 0, p25: 0, p50: 0 };
   } else {
     const numberOfSales = sales.length;
@@ -264,22 +266,22 @@ const calculatePriceIndicators = (sales) => {
 
 
 document.addEventListener('DOMContentLoaded', async () => {
-  const deals = await fetchDeals();
-
-  setCurrentDeals(deals);
+  const dealsApiCall = await fetchDeals();
+  setCurrentDeals(dealsApiCall);
+  console.log(currentDeals);
   render(currentDeals, currentPagination);
 });
 
 selectPage.addEventListener('change', async (event) => {
-  const deals = await fetchDeals(parseInt(event.target.value), selectShow.value);
-  setCurrentDeals(deals);
+  const dealsApiCall= await fetchDeals(parseInt(event.target.value), selectShow.value);
+  setCurrentDeals(dealsApiCall);
   render(currentDeals, currentPagination);
 });
 
 selectShow.addEventListener('change', async (event) => {
-  const deals = await fetchDeals(currentPagination.currentPage, parseInt(event.target.value));
+  const dealsApiCall = await fetchDeals(currentPagination.currentPage, parseInt(event.target.value));
 
-  setCurrentDeals(deals);
+  setCurrentDeals(dealsApiCall);
   render(currentDeals, currentPagination);
 });
 
@@ -304,8 +306,8 @@ function buttonChangeState(button) {
  */
 
 buttonBestDiscount.addEventListener('click', async () => {
-  const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
-  setCurrentDeals(deals);
+  const dealsApiCall = await fetchDeals(currentPagination.currentPage, selectShow.value);
+  setCurrentDeals(dealsApiCall);
   buttonChangeState(buttonBestDiscount);
   if (buttonBestDiscount.state === 'on') {
     currentDeals = sortDealsByDiscount(currentDeals).filter(deal => deal.discount >= 50);
@@ -316,8 +318,8 @@ buttonBestDiscount.addEventListener('click', async () => {
 });
 
 buttonMostCommented.addEventListener('click', async () => {
-  const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
-  setCurrentDeals(deals);
+  const dealsApiCall = await fetchDeals(currentPagination.currentPage, selectShow.value);
+  setCurrentDeals(dealsApiCall);
   buttonChangeState(buttonMostCommented);
   if (buttonMostCommented.state === 'on') {
     currentDeals = currentDeals.filter(deal => deal.comments >= 15);;
@@ -327,8 +329,8 @@ buttonMostCommented.addEventListener('click', async () => {
 })
 
 buttonHotDeals.addEventListener('click', async () => {
-  const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
-  setCurrentDeals(deals);
+  const dealsApiCall = await fetchDeals(currentPagination.currentPage, selectShow.value);
+  setCurrentDeals(dealsApiCall);
   buttonChangeState(buttonHotDeals);
   if (buttonHotDeals.state === 'on') {
     currentDeals = currentDeals.filter(deal => deal.temperature >= 100);
@@ -339,8 +341,8 @@ buttonHotDeals.addEventListener('click', async () => {
 
 
 buttonFavoriteDeals.addEventListener('click', async () => {
-  const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
-  setCurrentDeals(deals);
+  const dealsApiCall = await fetchDeals(currentPagination.currentPage, selectShow.value);
+  setCurrentDeals(dealsApiCall);
   buttonChangeState(buttonFavoriteDeals);
   if (buttonFavoriteDeals.state === 'on') {
     currentDeals = currentDeals.filter(deal => favoriteDealIds.includes(deal.id));
@@ -350,8 +352,8 @@ buttonFavoriteDeals.addEventListener('click', async () => {
 })
 
 selectSort.addEventListener('change', async (event) => {
-  const deals = await fetchDeals(currentPagination.currentPage, selectShow.value);
-  setCurrentDeals(deals);
+  const dealsApiCall = await fetchDeals(currentPagination.currentPage, selectShow.value);
+  setCurrentDeals(dealsApiCall);
   switch (event.target.value) {
     case 'price-asc':
       currentDeals = currentDeals.sort((a, b) => a.price - b.price);
@@ -375,10 +377,12 @@ selectSort.addEventListener('change', async (event) => {
 
 const vintedIndicators = async (legoSetId) => {
   const sales = await fetchSales(legoSetId);
-  return calculatePriceIndicators(sales.result);
+  console.log(sales);
+  return calculatePriceIndicators(sales.results);
 }
 const openVintedSalesPopup = async (legoSetId) => {
   const sales = await fetchSales(legoSetId);
+  console.log(sales);
 
   const vintedSalesContent = document.getElementById('vinted-sales-content');
   vintedSalesContent.innerHTML = ''; // Clear previous content
@@ -386,7 +390,7 @@ const openVintedSalesPopup = async (legoSetId) => {
   if (sales.length === 0) {
     vintedSalesContent.innerHTML = '<p>No Vinted sales found for this LEGO set.</p>';
   } else {
-    const indicators = await calculatePriceIndicators(sales.result);
+    const indicators = await calculatePriceIndicators(sales.results);
 
 
     const oldestDuration = indicators.oldestDuration;
@@ -409,7 +413,7 @@ const openVintedSalesPopup = async (legoSetId) => {
           </div>
         `;
 
-    sales.result.forEach(sale => {
+    sales.results.forEach(sale => {
       vintedSalesContent.innerHTML += `
               <div class="sale">
                   <span>${formatageDate(sale.published)}</span>
