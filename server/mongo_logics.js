@@ -21,8 +21,159 @@ async function closeDatabaseConnection(client) {
   if (client) {
     await client.close();
     console.log('🛑 MongoDB connection closed');
-    db = null;
     client = null;
+  }
+}
+
+async function findDeals(priceMin, priceMax, startDate, endDate, sortBy, limit, offset, discountMin, commentMin ) {
+  try {
+    let query = {}; // Initialisation du filtre
+    const { db, client } = await connectToDatabase();
+
+    /* FILTERs */
+
+    if (priceMin && priceMax) {
+      query['dealabs.price'] = { $lt: priceMax, $gt: priceMin }; 
+    } else if (priceMin) {
+      query['dealabs.price'] = { $gt: priceMin };
+    } else if (priceMax) {
+      query['dealabs.price'] = { $lt: priceMax };
+    }
+
+    if (startDate && endDate) {
+      query['dealabs.publishedAt'] = { $gte: startDate, $lt: endDate };
+    }
+    else if (startDate) {
+      query['dealabs.publishedAt'] = { $gte: startDate };
+    }
+    else if (endDate) {
+      query['dealabs.publishedAt'] = { $lt: endDate };
+    }
+
+    if (discountMin) { 
+      query['$expr'] = {
+        $lt: [
+          '$dealabs.price',  
+          { 
+            $multiply: [
+              '$dealabs.nextBestPrice',  
+              {$subtract: [1, { $divide: [discountMin, 100] }] }
+            ]
+          }
+        ]
+      };
+    }
+    
+
+    if (commentMin) {
+      query['dealabs.commentCount'] = { $gte: commentMin };
+    }
+    
+    /* sort by */
+    let sort = { 'dealabs.price': 1 };
+    if (sortBy) {
+      switch (sortBy) {
+        case 'priceUp':
+          sort = { 'dealabs.price': 1 };
+          break;
+        case 'priceDown':
+          sort = { 'dealabs.price': -1 };
+          break;
+        case 'commentsUp':
+          sort = { 'dealabs.commentCount': 1 };
+          break;
+        case 'commentsDown':
+          sort = { 'dealabs.commentCount': -1 };
+          break;
+        case 'dateUp':
+          sort = { 'dealabs.publishedAt': 1 };
+          break;
+        case 'dateDown':
+          sort = { 'dealabs.publishedAt': -1 };
+          break;
+        default:
+          sort = { 'dealabs.price': 1 };
+          break;
+      }
+    }
+    
+    // Rechercher dans la collection "deals"
+    const deals = await db.collection('deals').find(query).skip(offset).limit(limit).sort(sort).toArray();
+
+    const total = await db.collection('deals').countDocuments(query); // Compter le nombre total de documents correspondant au filtre
+
+    await closeDatabaseConnection(client);
+
+    return { deals, total };
+
+  } catch (e) {
+    console.error('Error finding deals:', e);
+  }
+}
+
+async function findSales(legoSetId, priceMin, priceMax, startDate, endDate, sortBy, limit,offset, favouriteCount) {
+  try {
+    const { db, client } = await connectToDatabase();
+    
+    let query = {}; // Initialisation du filtre
+    let sort = {};  // Initialisation du tri
+
+    // Filtre : ID du set LEGO
+    if (legoSetId) {
+      query['id_lego'] = legoSetId;
+    }
+
+    // Filtre : Plage de prix
+    if (priceMin && priceMax) {
+      query['price'] = { $gte: priceMin, $lte: priceMax };
+    } else if (priceMin) {
+      query['price'] = { $gte: priceMin };
+    } else if (priceMax) {
+      query['price'] = { $lte: priceMax };
+    }
+    if (startDate && endDate) {
+      query['timestamp'] = { $gte: startDate, $lte: endDate };
+    } else if (startDate) { 
+      query['timestamp'] = { $gte: startDate };
+    } else if (endDate) {
+      query['timestamp'] = { $lte: endDate };
+    }
+
+    // Filtre : Nombre minimum de favoris
+    if (favouriteCount) {
+      query['favourite_count'] = { $gte: favouriteCount };
+    }
+
+    // Tri : Configurer le critère de tri
+    if (sortBy) {
+      switch (sortBy) {
+        case 'priceUp':
+          sort['price'] = 1; // Tri par prix croissant
+          break;
+        case 'priceDown':
+          sort['price'] = -1; // Tri par prix décroissant
+          break;
+        case 'favouritesUp':
+          sort['favourite_count'] = 1; // Tri par favoris croissant
+          break;
+        case 'favouritesDown':
+          sort['favourite_count'] = -1; // Tri par favoris décroissant
+          break;
+        default:
+          sort['timestamp'] = -1; // Tri par date décroissante par défaut
+      }
+    }
+
+    // Exécuter la requête MongoDB
+    const sales = await db.collection('sales').find(query).skip(offset).limit(limit).sort(sort).toArray();
+
+    const total = await db.collection('sales').countDocuments(query); // Total des résultats
+
+    await closeDatabaseConnection(client);
+
+    return { sales, total };
+  } catch (e) {
+    console.error('Error finding sales:', e);
   }
 }
 
@@ -143,12 +294,6 @@ async function findAndSortVintedSalesByDate(db, dealId, context={}) {
 }
 
 module.exports = {
-  connectToDatabase,
-  closeDatabaseConnection,
-  findBestPriceDeals,
-  buildMostCommentedDealsQuery,
-  sortByPrice,
-  sortByDate,
-  findRecentVintedSalesByDealId,
-  findAndSortVintedSalesByDate,
+  findDeals,
+  findSales
 };
