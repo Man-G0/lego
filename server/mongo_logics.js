@@ -25,7 +25,7 @@ async function closeDatabaseConnection(client) {
   }
 }
 
-async function findDeals(priceMin, priceMax, startDate, endDate, sortBy, limit, offset, discountMin, commentMin ) {
+async function findDeals(priceMin, priceMax, startDate, endDate, sortBy, limit, offset, discountMin, commentMin, temperatureMin ) {
   try {
     let query = {}; // Initialisation du filtre
     const { db, client } = await connectToDatabase();
@@ -40,7 +40,7 @@ async function findDeals(priceMin, priceMax, startDate, endDate, sortBy, limit, 
       query['dealabs.price'] = { $lt: priceMax };
     }
 
-    if (startDate && endDate) {
+    if (startDate && endDate && startDate < endDate) {
       query['dealabs.publishedAt'] = { $gte: startDate, $lt: endDate };
     }
     else if (startDate) {
@@ -68,6 +68,10 @@ async function findDeals(priceMin, priceMax, startDate, endDate, sortBy, limit, 
     if (commentMin) {
       query['dealabs.commentCount'] = { $gte: commentMin };
     }
+
+    if (temperatureMin) {
+      query['dealabs.temperature'] = { $gte: temperatureMin };
+    }
     
     
     /* sort by */
@@ -91,6 +95,12 @@ async function findDeals(priceMin, priceMax, startDate, endDate, sortBy, limit, 
           break;
         case 'dateDown':
           sort = { 'dealabs.publishedAt': -1 };
+          break;
+        case 'temperatureUp':
+          sort = { 'dealabs.temperature': 1 };
+          break;
+        case 'temperatureDown':
+          sort = { 'dealabs.temperature': -1 };
           break;
         default:
           sort = { 'dealabs.price': 1 };

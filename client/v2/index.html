@@ -3,16 +3,16 @@
 
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <title>🧱 Lego | Predictability of a lego set deal</title>
+  <title> Lets go - Les deals Legos les plus intéressants </title>
   <style>
     html,
     body {
       font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
-      height: 100%;
-      width: 100%;
-      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      overflow-y: auto;
       background-color: rgb(235, 235, 235);
     }
 
@@ -31,94 +31,394 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 2%;
-      width: 96%;
-
+      padding: 2%;
+      max-height: 88vh;
+      box-sizing: border-box;
     }
 
-    /* Style for each deal item */
+    .menu {
+      width: 15%;
+      margin: 1%;
+      padding: 1%;
+      height: 81vh;
+      background-color: #f7f7f7;
+      border-radius: 3%;
+      flex-direction: column;
+      box-shadow: 0 4px 6px rgba(148, 0, 0, 0.374);
+      display: flex;
+      justify-content: space-between;
+    }
+
+
+    .menu h1 {
+      text-align: center;
+      font-size: 1.5rem;
+      color: #e3000b;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+
+    .row-container span {
+      font-size: 1rem;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .row-container img {
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    .row-container img:hover {
+      transform: scale(1.1);
+    }
+
+    select {
+      border: 1px solid #d9d9d9;
+      border-radius: 5px;
+      padding: 5px 10px;
+      background-color: #fff;
+      font-size: 1rem;
+      color: #333;
+      transition: border-color 0.3s ease;
+    }
+
+    select:focus {
+      border-color: #007bff;
+    }
+
+    #pagination {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #pagination span {
+      font-size: 1rem;
+      font-weight: 500;
+      color: #333;
+    }
+
+
     .deal {
       border: 1px solid #ccc;
-      border-radius: 5px;
-      padding: 10px;
+      border-radius: 5%;
+      max-height: 100%;
       text-align: center;
       background-color: #fff;
+      margin: 0%;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      transition: transform 0.3s, box-shadow 0.3s;
+      /* Animation douce */
     }
 
-    .deal img.deal-image {
-      max-width: 100%;
-      height: auto;
+    .deal:hover {
+      transform: scale(1.03);
+      box-shadow: 0 8px 12px rgba(0, 0, 0, 0.4);
+      border-color: #007bff;
+
+    }
+
+    .deal-image-container {
+      position: relative;
+      width: 100%;
+      height: 80%;
+      overflow: hidden;
+    }
+
+    .deal-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      overflow: hidden;
+    }
+
+    .discount-badge {
+      position: absolute;
+      top: 2%;
+      right: 2%;
+      background-color: rgb(175, 1, 1);
+      color: white;
+      font-size: clamp(0.5rem, 1.2vw, 1.9rem);
+      ;
+      font-weight: bold;
+      border-radius: 50%;
+      aspect-ratio: 1;
+      display: flex;
+      padding: 0.8em;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
     }
 
 
-    .item {
-      border: 1px solid #ccc;
+    .deal-price {
+      position: absolute;
+      top: 6%;
+      left: 2%;
+      white-space: nowrap;
+      background-color: rgba(173, 173, 173, 0.8);
+      color: black;
+      font-size: clamp(0.8rem, 1.5vw, 2rem);
+      /* Taille minimale, idéale, et maximale */
+      ;
+      font-weight: bold;
+      padding: 5px 10px;
+      border-radius: 5px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .top-bar-deals-info {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      margin-top: 0.5vw;
+      gap: 1vw;
+      margin-left: auto;
+    }
+
+    .deal-title {
+      font-size: 1vw;
+      margin-top: 0vw;
+      margin-bottom: 0vw;
+      margin-left: 0.5vw;
+      margin-right: 0vw;
+      padding: 0vw;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: bold;
+      text-align: left;
+      color: #333;
+    }
+
+
+    .deal-title a {
+      text-decoration: none;
+      color: #333;
+      transition: color 0.3s;
+    }
+
+    .deal-title a:hover {
+      color: #007bff;
+      /* Highlight on hover */
+    }
+
+
+
+    .favorite-icon {
+      width: 3vw;
+      height: 3vw;
+      aspect-ratio: 1;
+      cursor: pointer;
+    }
+
+    .plus-button {
+      font-size: 14px;
+      width: 2.5vw;
+      height: 2.5vw;
+      margin-top: 0.5vw;
+      margin-bottom: 0.5vw;
+      margin-right: 0.5vw;
+      cursor: pointer;
+      aspect-ratio: 1;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      border-radius: 5px;
+      transition: background-color 0.3s;
+    }
+
+    .plus-button:hover {
+      background-color: #0056b3;
+    }
+
+
+    .slider-container {
+      position: relative;
+      width: 100%;
+      margin-top: 10%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      width: 100%;
+      outline: none;
+      position: absolute;
+      margin: auto;
+      top: 0;
+      bottom: 0;
+      background-color: transparent;
+      pointer-events: none;
+    }
+
+    .slider-track {
+      width: 100%;
+      height: 5px;
+      position: absolute;
+      margin: auto;
+      background-color: #dadae5;
+      top: 0;
+      bottom: 0;
+      border-radius: 5px;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+      -webkit-appearance: none;
+      height: 5px;
+    }
+
+    input[type="range"]::-moz-range-track {
+      -moz-appearance: none;
+      height: 5px;
+    }
+
+    input[type="range"]::-ms-track {
+      appearance: none;
+      height: 5px;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 1.7em;
+      width: 1.7em;
+      background-color: #3264fe;
+      cursor: pointer;
+      margin-top: -9px;
+      pointer-events: auto;
+      border-radius: 50%;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      -webkit-appearance: none;
+      height: 1.7em;
+      width: 1.7em;
+      cursor: pointer;
+      border-radius: 50%;
+      background-color: #3264fe;
+      pointer-events: auto;
+    }
+
+    input[type="range"]::-ms-thumb {
+      appearance: none;
+      height: 1.7em;
+      width: 1.7em;
+      cursor: pointer;
+      border-radius: 50%;
+      background-color: #3264fe;
+      pointer-events: auto;
+    }
+
+    input[type="range"]:active::-webkit-slider-thumb {
+      background-color: #ffffff;
+      border: 3px solid #3264fe;
+    }
+
+    .values {
+      position: relative;
+      margin: auto;
+      padding: 10px 0;
+      text-align: center;
+      font-weight: 500;
+      font-size: 25px;
+      color: #ffffff;
     }
   </style>
 </head>
 
 <body>
   <section class="row-container"
-    style="height: 100%;width: 100%; display: flex; align-items: center; justify-content: space-between; ">
+    style="height: 100vh;width: 100vw; display: flex; align-items: center; justify-content: space-between; ">
     <section class="row-container" id="banner"
-      style="flex: 3; display: flex; justify-content: flex-start; max-height: 15vh; width: 100vw;background-color: #FFD502; margin: 0%">
+      style="flex: 1; display: flex; justify-content: flex-start; max-height: 15vh; width: 100vw;background-color: #FFD502; margin: 0%">
       <div style="display: flex; align-items: center; justify-content:  space-between; width: 100%;">
         <div style="flex: 1; display: flex; justify-content: flex-start;">
           <img src="../images/brand-lego.svg" alt="Lego banner" style="max-height: 10vh; width: auto; margin: 2%;" />
         </div>
 
         <div style="flex: 2; display: flex; justify-content: center; width: 100%;">
-          <h1>Lego Deals</h1>
+          <h1>Let's go</h1>
         </div>
         <div style="flex: 1;"></div>
       </div>
     </section>
-    <section class="row-container item" id="All-Content"
-      style="flex: 9; display: flex;width: 100%;height: 100%; margin: 0%;">
+    <section class="row-container item" id="All-Content" style="flex: 9; margin: 0%;">
       <section class="column-container" id="deals-presentation"
-        style="flex : none; align-items:start; justify-content: space-between;gap: 1%;width: 100%;height: 85%; margin: 1%; ">
+        style="align-items:start; justify-content: space-between;width: 100vw; margin: 0;flex-grow: 1;">
 
-        <section id="filters-sort-pagination" class="row-container"
-          style="width: 20%; background-color:#FFD502; height: 100%;border-radius: 5px; display: flex; justify-content: space-evenly; flex-direction: column; ">
-          <h1 style="align-self: center; font-size: large;">DealLabs Deals</h1>
-          <div id="filters" class="row-container" style="margin-left: 4%; margin-bottom: 20px; flex :4;">
-            <span style="font-weight: bold;">Filter:</span>
-
-            <div id="best-discount-lbl" class="row-container">
-              <span>Filter Discount >= 50% :</span>
-              <img id="best-discount-toggle" src="../images/toggle-off.png" alt="Toggle best discount filter"
-                style="width: 40px; cursor: pointer;" state="off" />
-            </div>
-
-            <div id="most-commented-lbl" class="row-container">
-              <span>Filter Commented >= 15 times:</span>
-              <img id="most-commented-toggle" src="../images/toggle-off.png" alt="Toggle most commented filter"
-                style="width: 40px; cursor: pointer;" state="off" />
-            </div>
+        <section class="menu" id="filters-sort-pagination">
+          <h1>DealLabs Deals</h1>
+          <div id="filters" class="row-container" style="margin-bottom: 20px;">
+            <span style="font-weight: bold;">Filter by:</span>
 
             <div id="hot-deals-button" class="row-container">
-              <span>Filter By Hot Deals:</span>
+              <span>Hot Deals:</span>
               <img id="hot-deals-toggle" src="../images/toggle-off.png" alt="Toggle hot deals filter"
                 style="width: 40px; cursor: pointer;" state="off" />
             </div>
 
             <div id="favorites-button" class="row-container">
-              <span>Filter By Favorites Deals:</span>
+              <span>Favorites Deals:</span>
               <img id="favorites-toggle" src="../images/toggle-off.png" alt="Toggle favorite deals filter"
                 style="width: 40px; cursor: pointer;" state="off" />
             </div>
+            <div class="slider-container">
+              <span style="font-weight: bold;" id="name">Price:</span>
+              <div class="values">
+                <span id="range1">
+                  0
+                </span>
+                <span> € &dash; </span>
+                <span id="range2">
+                  600
+                </span>
+                <span> € </span>
+              </div>
+              <div class="slider-track"></div>
+              <input type="range" min="0" max="700" value="0" id="slider-1">
+              <input type="range" min="0" max="700" value="700" id="slider-2">
+            </div>
+            <div class="slider-container">
+              <span style="font-weight: bold;" id="name">Date:</span>
+              <div class="values">
+                <span id="range1">
+                  0
+                </span>
+                <span> &dash; </span>
+                <span id="range2">
+                  0
+                </span>
+              </div>
+              <div class="slider-track"></div>
+              <input type="range" min="1609024729" max="1766791129" value="1609024729" id="slider-1">
+              <input type="range" min="1609024729" max="1766791129" value="1766791129" id="slider-2">
+            </div>
           </div>
-          <div id="sort" class="row-container" style="margin: 4%; flex :3;">
+          <div id="sort" class="row-container" style="margin: 4%;">
             <span style="font-weight: bold;">Sort:</span>
             <label for="sort-select">Choose Sort Order:</label>
             <select name="sort" id="sort-select" style="width: 10vw;">
               <option value="price-asc">Cheaper</option>
               <option value="price-desc">Expensive</option>
+              <option value="temperature-desc">Hottest temperature</option>
               <option value="date-asc">Recently Published</option>
               <option value="date-desc">Oldest Published</option>
+              <option value="comments-desc">Most commented</option>
             </select>
           </div>
-          <section id="pagination" class="row-container"
-            style="flex:2; display: flex;margin: 4%; margin-bottom: 20px;  align-self: center">
+          <section id="pagination" class="row-container">
             <div>
               <span id="nbDeals">0</span>
               <span> deals in total</span>
@@ -137,13 +437,13 @@
             </div>
           </section>
         </section>
-        <section class="row-container" id="deals" style="width: 80%; height: 100%; align-self: center;">
-          <div class="deals-container" style="overflow-y:scroll;height: 100%;padding-top: 1%;padding-bottom: 1%;;">
+        <section class="row-container" id="deals" style="width: 85%; align-self: center;">
+          <div class="deals-container" style="overflow-y:scroll;">
             <!-- Deals here -->
           </div>
         </section>
       </section>
-      
+
       <script type="text/javascript" charset="UTF-8" src="utils.js"></script>
       <script type="text/javascript" charset="UTF-8" src="portfolio.js"></script>
     </section>

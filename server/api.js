@@ -87,8 +87,8 @@ app.get('/deals/search', async (request, response) => {
     const { page,limit, priceMin, priceMax, startDate, endDate, sortBy, offset } = requestBase(request);
     const discountMin = parseInt(request.query.discountMin);
     const commentMin = parseInt(request.query.commentMin);
-    
-    const {deals, total} = await mongo_logics.findDeals(priceMin, priceMax, startDate, endDate, sortBy, limit, offset, discountMin, commentMin );
+    const temperatureMin = parseInt(request.query.temperatureMin);
+    const {deals, total} = await mongo_logics.findDeals(priceMin, priceMax, startDate, endDate, sortBy, limit, offset, discountMin, commentMin, temperatureMin);
     
     response.json({
       success: true,
