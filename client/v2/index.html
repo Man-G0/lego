@@ -4,6 +4,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <title> Lets go - Most Interesting Lego's deals </title>
+  <link rel="icon" href="./images/brand-lego.svg" type="image/x-icon">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     html,
@@ -179,7 +180,7 @@
     .row-container .title {
       font-size: clamp(0.6em, 1vw, 1.5rem);
       font-weight: bold;
-      background-color: #ffd5028b;
+      background-color:#FFD502;
       border-radius: 0.2vw;
       flex-grow: 1;
       margin: 0.8vh 0vh;
@@ -454,8 +455,6 @@
       /* Highlight on hover */
     }
 
-
-
     .favorite-icon {
       width: 3vw;
       height: 3vw;
@@ -526,7 +525,7 @@
 
       padding: 10px 20px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      border-radius: 0 0 50% 50% / 0 0 10% 10%;
+      border-radius: 50 50% 50% 50% / 10% 10% 10% 10%;
     }
 
     .modal-header h2 {
@@ -539,12 +538,13 @@
     .modal-body {
       padding: 20px;
       background-color: white;
+      border-radius: 0 0 50% 50% / 0 0 10% 10%;
     }
 
     /* Indicators Styling */
     .indicators {
       display: flex;
-      justify-content: space-around;
+      justify-content: space-evenly;
       margin-bottom: 20px;
     }
 
@@ -744,11 +744,15 @@
     <div class="modal-header">
       <h2>Vinted Sales for LEGO Set</h2>
       <button id="close-modal"
-        style="background: none; border: none; font-size: 1.5rem; color: red; cursor: pointer; ">&times;</button>
+        style="background: none; border: none; font-size: 2rem; color: red; cursor: pointer; ">&times;</button>
     </div>
     <div class="modal-body" id="vinted-sales-content">
 
       <div class="indicators">
+        <div class="indicator">
+          <div class="indicator-circle" id="DealLabsPrice"></div>
+          <div class="indicator-label">DealLab Price</div>
+        </div>
         <div class="indicator">
           <div class="indicator-circle" id="NbSales"></div>
           <div class="indicator-label">Number of Sales</div>
@@ -763,11 +767,11 @@
         </div>
         <div class="indicator">
           <div class="indicator-circle" id="OldestDeal"></div>
-          <div class="indicator-label">OldestDeal</div>
+          <div class="indicator-label">Oldest Deal</div>
         </div>
         <div class="indicator">
           <div class="indicator-circle" id="MostRecentDeal"></div>
-          <div class="indicator-label">MostRecentDeal</div>
+          <div class="indicator-label">Most Recent Deal</div>
         </div>
 
       </div>
@@ -791,7 +795,7 @@
         </div>
         <div class="sort-container">
           <label for="sort-vinted">Sort by:</label>
-          <select id="sort-vinted">
+          <select id="sort-vinted" style="background-color:#007bffba;">
             <option value="date-desc">Date: Newest First</option>
             <option value="price-asc">Price: Low to High</option>
             <option value="price-desc">Price: High to Low</option>

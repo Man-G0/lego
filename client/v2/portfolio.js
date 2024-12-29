@@ -655,6 +655,9 @@ const openVintedSalesPopup = async (legoSetId, price) => {
     const mostRecentDeal = indicators.mostRecentOffer;
     const oldestDeal = indicators.oldestDuration.split(' and')[0];
 
+    document.getElementById('DealLabsPrice').textContent = `${deal.dealabs.price} €`;
+
+
     document.getElementById('sort-vinted').value = 'date-desc';
     document.getElementById('NbSales').textContent = indicators.numberOfSales;
     document.getElementById('AvgPrice').textContent = `${avg}€`;
