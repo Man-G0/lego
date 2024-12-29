@@ -25,7 +25,7 @@ let currentDeals = [];
 
 let currentPagination = {};
 
-let currentParameters = { priceMin: -1, priceMax: -1, startDate: 1724875869, endDate: Date.now*1000, sort: '' };
+let currentParameters = { priceMin: -1, priceMax: -1, startDate: 1724875869, endDate: Date.now * 1000, sort: 'temperatureDown', };
 
 let favoriteDealIds = [];
 
@@ -37,8 +37,6 @@ const selectSort = document.querySelector('#sort-select');
 const sectionDeals = document.querySelector('#deals');
 const spanNbDeals = document.querySelector('#nbDeals');
 const sectionVintedSales = document.querySelector('#vinted-sales');
-const buttonBestDiscount = document.querySelector('#best-discount-toggle')
-const buttonMostCommented = document.querySelector('#most-commented-toggle');
 const buttonHotDeals = document.querySelector('#hot-deals-toggle');
 const buttonFavoriteDeals = document.querySelector('#favorites-toggle');
 const spanP5 = document.querySelector('#p5-sale-price');
@@ -79,7 +77,7 @@ const durationSince = (date) => {
   return parts.join(' ');
 };
 const formatageDate = (date) => {
-  date = new Date(date * 1000);  
+  date = new Date(date * 1000);
   return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
 }
 
@@ -106,7 +104,7 @@ const fetchDeals = async (page = 1, size = 12) => {
     } else if (currentParameters.startDate > 0) {
       url += `&dateMin=${currentParameters.startDate}`;
     } else if (currentParameters.endDate > 0) {
-   
+
       url += `&dateMax=${currentParameters.endDate}`;
     }
 
@@ -122,7 +120,6 @@ const fetchDeals = async (page = 1, size = 12) => {
       return { currentDeals: [], currentPagination: {} };
     }
 
-    console.log(body);
     return body;
 
   } catch (error) {
@@ -134,9 +131,9 @@ const fetchDeals = async (page = 1, size = 12) => {
 /**
  * Fetch sales for a given lego set id
  */
-const fetchSales = async id => {
+const fetchSales = async (id,pagination=1, limit=5) => {
   try {
-    const response = await fetch(`https://lego-sigma-seven.vercel.app/sales/search?legoSetId=${id}`);
+    const response = await fetch(`https://lego-sigma-seven.vercel.app/sales/search?legoSetId=${id}&page=${pagination}&size=${limit}`);
     const body = await response.json();
 
     if (body.success !== true) {
@@ -154,46 +151,85 @@ const fetchSales = async id => {
  * Render list of deals
  * @param  {Array} deals
  */
-const renderDeals = deals => {
+const renderDeals = async deals => {
   const dealsContainer = sectionDeals.querySelector('.deals-container');
   dealsContainer.innerHTML = ''; // Clear previous deals
   if (!deals.length) {
     dealsContainer.innerHTML = '<h2>No deals found</h2>';
     return;
   } else {
-    const fragment = document.createDocumentFragment(); // Create a fragment for better performance
+    const fragment = document.createDocumentFragment(); 
+    const dealsWithSales = await Promise.all(deals.map(async (deal) => {
+      let vintedsales = await fetchSales(deal.dealabs.ID,1,100);
+      return { deal, vintedsales }; 
+    }));
 
-    deals.forEach(deal => {
-      const dealDiv = document.createElement('div');
-      const dealContent = deal.dealabs;
-      const discount = dealContent.nextBestPrice != 0 ? (100 - (dealContent.price / dealContent.nextBestPrice * 100)).toFixed(0) : 0;
+    dealsWithSales.forEach(({ deal, vintedsales }) => {
+      let dealDiv = document.createElement('div');
+      let rentabilite = 0;
+
+      let dealContent = deal.dealabs;
+      if (vintedsales.results.length > 0) {
+        let vintedIndicators = calculatePriceIndicators(vintedsales);
+        rentabilite = dealContent.price != 0 ? calculateRentability(deal, vintedIndicators) : 0;
+      }
+      let discount = dealContent.nextBestPrice != 0 ? (100 - (dealContent.price / dealContent.nextBestPrice * 100)).toFixed(0) : 0;
+      let rentabilityClass = getBadgeClass(rentabilite, 20, rentabilityLevel);
+      let temperatureClass = getBadgeClass(dealContent.temperature, 50.0, 100.0);
+
+
+      let discountClass = discount > 0 ? getBadgeClass(discount, 20, 30) : '';
+
       dealDiv.classList.add('deal');
       dealDiv.innerHTML = `
         <div class="top-bar-deals-info">
+        ${rentabilityClass == "high"
+          ? `<img src="../images/hot-icon.gif" alt="hot-icon" style="width: 3vw;aspect-ratio: 1;"/>`
+          : ''
+        }
+        
         <h3 class="deal-title">
           <a href="${deal.dealabs.link}" target="_blank">${deal.dealabs.title}</a>
         </h3>
           <img 
-            src="${favoriteDealIds.includes(deal.dealabs.ID)
+            src="${favoriteDealIds.some(fav => fav.dealId === deal.dealabs.ID && parseFloat(fav.dealPrice) === parseFloat(deal.dealabs.price))
           ? '../images/star.png'
           : '../images/empty-star.png'
         }" 
             class="favorite-icon" 
-            deal-id="${deal.dealabs.ID}" 
+            deal-id="${deal.dealabs.ID}"
+            deal-price="${deal.dealabs.price}"
             alt="Add to favorites"
           />
-          <button class="plus-button" deal-id="${deal.dealabs.ID}">+</button>
+          <button class="plus-button" deal-id="${deal.dealabs.ID}" deal-price="${deal.dealabs.price}">+</button>
         </div>
         <div div class="deal-image-container">
         
           <img src="${deal.dealabs.mainImage}" alt="${deal.dealabs.title}" class="deal-image" />
-          ${discount > 0
-          ? `<div class="discount-badge">-${discount}%</div>`
+          <div class="badge-container">
+            ${discount > 0
+          ? `<div class="badge ${discountClass}">-${discount}%</div>`
           : ''
         }
-          <div class="deal-price">
-            ${deal.dealabs.price} €
+            <div class="badge ${temperatureClass}" style="font-size: clamp(0.5rem, 0.8vw, 1.2rem);">
+            ${deal.dealabs.temperature}°C
+            </div>
           </div>
+          <div class="deal-informations-container" >
+            <div class="deal-informations" >
+              ${formatageDate(deal.dealabs.publishedAt)}
+            </div>
+            <div class="deal-informations">
+              ${deal.dealabs.price} €
+              ${deal.dealabs.nextBestPrice != 0
+          ? `<span id="real-price" style="color: #b3000c; text-decoration: line-through; font-size: clamp(0.5rem, 1vw, 1.8rem); font-weight: bold;">${deal.dealabs.nextBestPrice}€</span>`
+          : ''
+        }
+            </div>
+
+          </div>
+          
+          
         </div>
       `;
 
@@ -207,19 +243,43 @@ const renderDeals = deals => {
     attachEventListeners(dealsContainer);
   }
 };
+function getBadgeClass(temperature, lowValue, highValue) {
+  if (temperature < lowValue) return 'low';
+  if (temperature < highValue) return 'medium';
+  return 'high';
+}
+let rentabilityLevel = 30;
+function calculateRentability(deal, vintedIndicators) {
+  const timeAdjustment = Math.min(1, deal.dealabs.publishedAt / ((vintedIndicators.oldestLifetimeValue + vintedIndicators.timeSinceMostRecentOffer) / 2));
+  const avgMargin = vintedIndicators.avg - deal.dealabs.price;
+  const maxMargin = vintedIndicators.p75 - deal.dealabs.price;
+  const adjustedMargin = avgMargin + maxMargin / (2 * (1 + vintedIndicators.stdDev));
+  const rentability = adjustedMargin * timeAdjustment;
+  //|| vintedIndicators.p50 < 20 / 100 * vintedIndicators.p75
+ 
+  if ( isNaN(rentability) ) {
+    return 0;
+  }
+  else {
+    return rentability;
+  }
+}
+
 
 const attachEventListeners = (dealsContainer) => {
   dealsContainer.querySelectorAll('.favorite-icon').forEach(icon => {
     icon.addEventListener('click', (event) => {
       const dealId = icon.getAttribute('deal-id');
-      toggleFavorite(icon, dealId);
+      const dealPrice = icon.getAttribute('deal-price');
+      toggleFavorite(icon, dealId, dealPrice);
       event.stopPropagation();
     });
   });
   dealsContainer.querySelectorAll('.plus-button').forEach(button => {
     button.addEventListener('click', (event) => {
       const dealId = button.getAttribute('deal-id');
-      openVintedSalesPopup(dealId);
+      const dealPrice = button.getAttribute('deal-price');
+      openVintedSalesPopup(dealId, dealPrice);
       event.stopPropagation();
     });
   });
@@ -231,16 +291,17 @@ const attachEventListeners = (dealsContainer) => {
   dealsContainer.querySelectorAll('.deal').forEach(deal => {
     deal.addEventListener('click', () => {
       const dealId = deal.querySelector('.plus-button').getAttribute('deal-id');
-      openVintedSalesPopup(dealId);
+      const dealPrice = deal.querySelector('.plus-button').getAttribute('deal-price');
+      openVintedSalesPopup(dealId, dealPrice);
     });
   });
 }
 
-const toggleFavorite = (icon, dealId) => {
+const toggleFavorite = (icon, dealId, dealPrice) => {
   if (icon.src.includes('empty-star.png')) {
     icon.src = '../images/star.png';
-    console.log(`Deal ${dealId} added to favorites`);
-    favoriteDealIds.push(dealId);
+    console.log(`Deal ${dealId} with price ${dealPrice} added to favorites`);
+    favoriteDealIds.push({ dealId, dealPrice });
   } else {
     icon.src = '../images/empty-star.png';
     console.log(`Deal ${dealId} removed from favorites`);
@@ -281,24 +342,7 @@ const render = (currentDeals, pagination) => {
   renderPagination(pagination);
   renderIndicators(pagination);
 };
-const calculatePriceIndicators = (sales) => {
-  if (!sales) {
-    return { numberOfSales: 0, oldestDuration: 0, average: 0, p5: 0, p25: 0, p50: 0 };
-  } else {
-    const numberOfSales = sales.length;
-    const oldestLifetimeValue = sales.map(sale => sale.published).sort((a, b) => a - b)[0];
-    const oldestDuration = durationSince(oldestLifetimeValue);
-    const mostRecentOffer = durationSince(sales.map(sale => sale.published).sort((a, b) => b - a)[0]);
-    const prices = sales.map(sale => parseFloat(sale.price)).sort((a, b) => a - b);
-    const avg = (prices.reduce((sum, price) => sum + price, 0) / prices.length).toFixed(2);
-    const p5 = prices[Math.floor(prices.length * 0.05)].toFixed(2);
-    const p25 = prices[Math.floor(prices.length * 0.25)].toFixed(2);
-    const p50 = prices[Math.floor(prices.length * 0.50)].toFixed(2);
-    return { numberOfSales, mostRecentOffer, oldestDuration, avg, p5, p25, p50 };
-  }
 
-
-};
 // Fonction de gestion des sliders
 function initializeSliders(currentDeals) {
   const sliders = document.querySelectorAll(".slider-container");
@@ -319,8 +363,8 @@ function initializeSliders(currentDeals) {
       sliderOne.max = epochTime;
       sliderTwo.max = epochTime;
       sliderTwo.value = epochTime;
-      const sixMonthsAgo = epochTime - (6 * 30 * 24 * 60 * 60); 
-      sliderOne.min= sixMonthsAgo;
+      const sixMonthsAgo = epochTime - (3 * 30 * 24 * 60 * 60);
+      sliderOne.min = sixMonthsAgo;
       sliderTwo.min = sixMonthsAgo;
       sliderOne.value = sixMonthsAgo;
 
@@ -329,7 +373,7 @@ function initializeSliders(currentDeals) {
     }
 
     let sliderMaxValue = sliderOne.max;
-    
+
     displayValOne
     sliderOne.value = 0;
     sliderTwo.value = sliderMaxValue;
@@ -355,7 +399,7 @@ function initializeSliders(currentDeals) {
 
         fillColor();
 
-        const dealsApiCall = await fetchDeals(currentPagination.currentPage, selectShow.value);
+        const dealsApiCall = await fetchDeals();
         currentDeals = dealsApiCall.results;
         currentPagination = dealsApiCall.pagination;
         render(currentDeals, currentPagination);
@@ -384,11 +428,11 @@ function initializeSliders(currentDeals) {
 
         fillColor();
 
-        const dealsApiCall = await fetchDeals(currentPagination.currentPage, selectShow.value);
+        const dealsApiCall = await fetchDeals();
         currentDeals = dealsApiCall.results;
         currentPagination = dealsApiCall.pagination;
         render(currentDeals, currentPagination);
-      }, 300); 
+      }, 300);
     }
 
     // Fonction de remplissage de la couleur
@@ -416,10 +460,12 @@ function initializeSliders(currentDeals) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   const dealsApiCall = await fetchDeals();
+  buttonFavoriteDeals.state = 'off';
+  buttonHotDeals.state = 'off';
+
   setCurrentDeals(dealsApiCall);
   initializeSliders(currentDeals);
   selectShow.value = '12';
-  console.log(currentDeals);
   render(currentDeals, currentPagination);
 });
 
@@ -436,11 +482,18 @@ selectShow.addEventListener('change', async (event) => {
 });
 
 
-function sortDealsByDiscount(list) {
-  let sortedDeals = list.sort((a, b) => b.discount - a.discount);
-  return sortedDeals;
-}
+
 /**BUTTON LISTENERS */
+
+document.querySelectorAll('.page-navigation button').forEach(button => {
+  button.addEventListener('click', async (event) => {
+    const page = parseInt(selectPage.value) + parseInt(button.value);
+    const dealsApiCall = await fetchDeals(page, selectShow.value);
+    setCurrentDeals(dealsApiCall);
+    render(currentDeals, currentPagination);
+  });
+});
+
 function buttonChangeState(button) {
   if (button.state === 'off') {
     button.src = '../images/toggle-on.png';
@@ -451,16 +504,34 @@ function buttonChangeState(button) {
     button.state = 'off';
   }
 }
-/**
- * order by the discount desc and display only the deals with a discount >50
- */
 
 buttonHotDeals.addEventListener('click', async () => {
+  buttonChangeState(buttonHotDeals);
+  if (buttonFavoriteDeals.state === 'on') {
+    buttonChangeState(buttonFavoriteDeals);
+  }
+
   const dealsApiCall = await fetchDeals(currentPagination.currentPage, selectShow.value);
   setCurrentDeals(dealsApiCall);
-  buttonChangeState(buttonHotDeals);
+
+  const dealsWithSales = await Promise.all(dealsApiCall.results.map(async (deal) => {
+    let vintedsales = await fetchSales(deal.dealabs.ID, 1, 100); 
+    return { deal, vintedsales }; 
+  }));
+
+  let temp = dealsWithSales.map(({ deal, vintedsales }) => {
+    let dealContent = deal.dealabs;
+    let rentabilite = 0;
+    if (vintedsales.results.length > 0) {
+      let vintedIndicators = calculatePriceIndicators(vintedsales);
+      rentabilite = dealContent.price != 0 ? calculateRentability(deal, vintedIndicators) : 0;
+    }
+    deal.rentabilite = rentabilite;
+    return deal;
+  });
+
   if (buttonHotDeals.state === 'on') {
-    currentDeals = currentDeals.filter(deal => deal.temperature >= 100);
+    currentDeals = currentDeals.filter(deal => deal.rentabilite >= rentabilityLevel);
   }
   console.log('Sorted by Hot deals !');
   render(currentDeals, currentPagination);
@@ -468,11 +539,15 @@ buttonHotDeals.addEventListener('click', async () => {
 
 
 buttonFavoriteDeals.addEventListener('click', async () => {
-  const dealsApiCall = await fetchDeals(currentPagination.currentPage, selectShow.value);
-  setCurrentDeals(dealsApiCall);
   buttonChangeState(buttonFavoriteDeals);
+  if (buttonHotDeals.state === 'on') {
+    buttonChangeState(buttonHotDeals);
+  }
+  const dealsApiCall = await fetchDeals();
+  setCurrentDeals(dealsApiCall);
+
   if (buttonFavoriteDeals.state === 'on') {
-    currentDeals = currentDeals.filter(deal => favoriteDealIds.includes(deal.dealabs.ID));
+    currentDeals = currentDeals.filter(deal => favoriteDealIds.some(fav => fav.dealId === deal.dealabs.ID && parseFloat(fav.dealPrice) === parseFloat(deal.dealabs.price)));
   }
   console.log('Sorted by Favorite deals !')
   render(currentDeals, currentPagination);
@@ -507,69 +582,103 @@ selectSort.addEventListener('change', async (event) => {
 
 /*for the popup*/
 
-const vintedIndicators = async (legoSetId) => {
-  const sales = await fetchSales(legoSetId);
-  console.log(sales);
-  return calculatePriceIndicators(sales.results);
-}
-const openVintedSalesPopup = async (legoSetId) => {
-  const sales = await fetchSales(legoSetId);
-  console.log(sales);
+const calculatePriceIndicators = (sales) => {
+  if (!sales.results) {
+    return { numberOfSales: 0, oldestDuration: 0, average: 0, p5: 0, p25: 0, p50: 0 };
+  } else {
+    const numberOfSales = sales.pagination.count;
+    const oldestLifetimeValue = sales.results.map(sale => sale.timestamp).sort((a, b) => a - b)[0];
+    const oldestDuration = durationSince(oldestLifetimeValue);
+    const timeSinceMostRecentOffer = sales.results.map(sale => sale.timestamp).sort((a, b) => b - a)[0];
+    const mostRecentOffer = durationSince(timeSinceMostRecentOffer);
+    const prices = sales.results.map(sale => parseFloat(sale.price)).sort((a, b) => a - b);
+    const avg = (prices.reduce((sum, price) => sum + price, 0) / prices.length).toFixed(2);
+    const p5 = prices[Math.floor(prices.length * 0.05)].toFixed(2);
+    const p25 = prices[Math.floor(prices.length * 0.25)].toFixed(2);
+    const p50 = prices[Math.floor(prices.length * 0.50)].toFixed(2);
+    const p75 = prices[Math.floor(prices.length * 0.75)].toFixed(2);
+    const mean = prices.reduce((sum, price) => sum + price, 0) / prices.length;
+    const variance = prices.reduce((sum, price) => sum + Math.pow(price - mean, 2), 0) / prices.length;
+    const stdDev = Math.sqrt(variance).toFixed(2);
+    return { numberOfSales, mostRecentOffer, oldestDuration, avg, p5, p25, p50, p75, oldestLifetimeValue, timeSinceMostRecentOffer, stdDev };
+  }
 
+
+};
+
+const vintedTable = async(legoSetId, pagination) => {
+  const sales = await fetchSales(legoSetId, pagination, 5);
+  const salesTableBody = document.getElementById('vinted-sales');
+  console.log(pagination);
+  console.log(sales);
+  salesTableBody.innerHTML = ''; 
+  salesTableBody.innerHTML = sales.results.map(sale => `
+  <tr>
+  <td>${formatageDate(sale.timestamp)}</td>
+  <td><a href="${sale.link}" target="_blank">${sale.title}</a></td>
+  <td>${sale.price} €</td>
+  <td>${durationSince(sale.timestamp)} ago</td>
+  </tr>
+`).join('');
+  document.getElementById('page-info-vinted').textContent = `Page ${sales.pagination.currentPage} of ${sales.pagination.pageCount}`;
+}
+
+
+const openVintedSalesPopup = async (legoSetId, price) => {
+  let sales = await fetchSales(legoSetId, 1, 50);
+  console.log(sales);
+  const deal = currentDeals.find(d => d.dealabs.ID === legoSetId && parseFloat(price) === parseFloat(d.dealabs.price));
+
+ 
   const vintedSalesContent = document.getElementById('vinted-sales-content');
-  vintedSalesContent.innerHTML = ''; // Clear previous content
+
 
   if (sales.length === 0) {
+    vintedSalesContent.innerHTML = '';
     vintedSalesContent.innerHTML = '<p>No Vinted sales found for this LEGO set.</p>';
   } else {
-    const indicators = await calculatePriceIndicators(sales.results);
+    const indicators = calculatePriceIndicators(sales);
+    sales= await fetchSales(legoSetId, 1, 5);
 
-
-    const oldestDuration = indicators.oldestDuration;
-    const mostRecentOffer = indicators.mostRecentOffer;
+    const discount = deal.dealabs.nextBestPrice !== 0 ? (100 - (deal.dealabs.price / deal.dealabs.nextBestPrice * 100)).toFixed(0) : 0;
 
     const avg = indicators.avg;
     const p5 = indicators.p5;
     const p25 = indicators.p25;
     const p50 = indicators.p50;
-    vintedSalesContent.innerHTML += `
-          <div style="text-align: center; margin-top: 10px;">
-            <H3>Vinted Sales</h3>
-            <span>Number of sales: ${indicators.numberOfSales},</span>
-            <span>Average: ${avg} €,</span>
-            <span>P5: ${p5} €,</span>
-            <span>P25: ${p25} €,</span>
-            <span>P50: ${p50} €</span> <br />
-            <span>Oldest offer: ${oldestDuration} ago</span>
-            <span>Most recent offer: ${mostRecentOffer} ago</span><br /><br />
-          </div>
-        `;
 
-    sales.results.forEach(sale => {
-      vintedSalesContent.innerHTML += `
-              <div class="sale">
-                  <span>${formatageDate(sale.published)}</span>
-                  <a href="${sale.link}" target="_blank">${sale.title}</a>
-                  <span>${sale.price} €</span>
-                  <span>${durationSince(sale.published)} ago</span>
-              </div>
-          `;
+
+    document.getElementById('NbSales').textContent = indicators.numberOfSales;
+    document.getElementById('AvgPrice').textContent = `${avg} €`;
+    document.getElementById('P5').textContent = `${p5} €`;
+    document.getElementById('P25').textContent = `${p25} €`;
+    document.getElementById('P50').textContent = `${p50} €`;
+    let currentpage=1;
+    await vintedTable(legoSetId, currentpage);
+
+
+    
+
+
+
+    document.getElementById('vinted-modal').style.display = 'block';
+    document.getElementById('close-modal').addEventListener('click', () => {
+      document.getElementById('vinted-modal').style.display = 'none';
     });
+    document.getElementById('prev-page-vinted').addEventListener('click', async () => {
+      if (currentpage > 1) {
+        currentpage-=1;
+        await vintedTable(legoSetId, currentpage);
+      }
+    });
+
+    document.getElementById('next-page-vinted').addEventListener('click', async () => {
+      if (currentpage < sales.pagination.pageCount) {
+        currentpage+=1;
+        await vintedTable(legoSetId, currentpage);
+      }
+    });
+    
+
   }
-
-  document.getElementById('vinted-modal').style.display = 'block';
-  document.getElementById('modal-overlay').style.display = 'block';
-  document.getElementById('close-modal').addEventListener('click', () => {
-    document.getElementById('vinted-modal').style.display = 'none';
-    document.getElementById('modal-overlay').style.display = 'none';
-  });
-
-  document.getElementById('modal-overlay').addEventListener('click', () => {
-    document.getElementById('vinted-modal').style.display = 'none';
-    document.getElementById('modal-overlay').style.display = 'none';
-  });
 };
-
-
-
-
