@@ -9,7 +9,9 @@ async function sandbox_mongo() {
   try {
     const client = await MongoClient.connect(MONGODB_URI);
 
-    const db = client.db(MONGODB_DB_NAME); 
+    const db = client.db(MONGODB_DB_NAME);
+    await db.collection('deals').drop();
+    await db.collection('sales').drop();
 
     // Get the 'deals' collection
     const collection = db.collection('deals');

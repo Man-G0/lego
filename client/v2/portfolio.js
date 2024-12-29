@@ -53,7 +53,7 @@ const average = document.querySelector('#average-price');
  */
 
 
-const setCurrentDeals = ({ results, pagination }) => {
+let setCurrentDeals = ({ results, pagination }) => {
   currentDeals = results;
   currentPagination = pagination;
 };
@@ -131,11 +131,10 @@ const fetchDeals = async (page = 1, size = 12) => {
 /**
  * Fetch sales for a given lego set id
  */
-const fetchSales = async (id,pagination=1, limit=5) => {
+const fetchSales = async (id, pagination = 1, limit = 5, sortBy = "DateDown") => {
   try {
-    const response = await fetch(`https://lego-sigma-seven.vercel.app/sales/search?legoSetId=${id}&page=${pagination}&size=${limit}`);
+    const response = await fetch(`https://lego-sigma-seven.vercel.app/sales/search?legoSetId=${id}&page=${pagination}&size=${limit}&sortBy=${sortBy}`);
     const body = await response.json();
-
     if (body.success !== true) {
       console.error(body);
       return [];
@@ -158,10 +157,10 @@ const renderDeals = async deals => {
     dealsContainer.innerHTML = '<h2>No deals found</h2>';
     return;
   } else {
-    const fragment = document.createDocumentFragment(); 
+    const fragment = document.createDocumentFragment();
     const dealsWithSales = await Promise.all(deals.map(async (deal) => {
-      let vintedsales = await fetchSales(deal.dealabs.ID,1,100);
-      return { deal, vintedsales }; 
+      let vintedsales = await fetchSales(deal.dealabs.ID, 1, 100);
+      return { deal, vintedsales };
     }));
 
     dealsWithSales.forEach(({ deal, vintedsales }) => {
@@ -184,7 +183,7 @@ const renderDeals = async deals => {
       dealDiv.innerHTML = `
         <div class="top-bar-deals-info">
         ${rentabilityClass == "high"
-          ? `<img src="../images/hot-icon.gif" alt="hot-icon" style="width: 3vw;aspect-ratio: 1;"/>`
+          ? `<img src="../images/hot-icon.gif" alt="hot-icon" style="margin-left: 1vw;width: 3vw;aspect-ratio: 1;  object-fit: contain;"/>`
           : ''
         }
         
@@ -256,8 +255,8 @@ function calculateRentability(deal, vintedIndicators) {
   const adjustedMargin = avgMargin + maxMargin / (2 * (1 + vintedIndicators.stdDev));
   const rentability = adjustedMargin * timeAdjustment;
   //|| vintedIndicators.p50 < 20 / 100 * vintedIndicators.p75
- 
-  if ( isNaN(rentability) ) {
+
+  if (isNaN(rentability)) {
     return 0;
   }
   else {
@@ -349,6 +348,9 @@ function initializeSliders(currentDeals) {
   const nameDate = "Date:";
   const namePrice = "Price:";
 
+
+
+
   sliders.forEach(sliderContainer => {
     let sliderName = sliderContainer.querySelector("#name").textContent;
     let sliderOne = sliderContainer.querySelector("#slider-1");
@@ -358,6 +360,8 @@ function initializeSliders(currentDeals) {
     let minGap = sliderName === nameDate ? 86400 : 1; // 1 jour en secondes
 
     let sliderTrack = sliderContainer.querySelector(".slider-track");
+
+
     if (sliderName === nameDate) {
       const epochTime = Math.floor(Date.now() / 1000); // en secondes
       sliderOne.max = epochTime;
@@ -367,22 +371,22 @@ function initializeSliders(currentDeals) {
       sliderOne.min = sixMonthsAgo;
       sliderTwo.min = sixMonthsAgo;
       sliderOne.value = sixMonthsAgo;
-
       displayValOne.textContent = formatageDate(sliderOne.value);
       displayValTwo.textContent = formatageDate(sliderTwo.value);
     }
+    else if (sliderName === namePrice) {
 
+      sliderOne.value = 0;
+      sliderTwo.value = sliderOne.max;
+    }
+    let sliderMinValue = sliderOne.min;
     let sliderMaxValue = sliderOne.max;
 
-    displayValOne
-    sliderOne.value = 0;
-    sliderTwo.value = sliderMaxValue;
 
     // Fonction qui gère le premier slider
     let debounceTimeoutOne;
     async function slideOne() {
       clearTimeout(debounceTimeoutOne);
-
       debounceTimeoutOne = setTimeout(async () => {
         var value1 = parseInt(sliderOne.value);
         var value2 = parseInt(sliderTwo.value);
@@ -396,32 +400,34 @@ function initializeSliders(currentDeals) {
           currentParameters.priceMin = value1;
           displayValOne.textContent = sliderOne.value;
         }
-
         fillColor();
-
         const dealsApiCall = await fetchDeals();
-        currentDeals = dealsApiCall.results;
+        setCurrentDeals(dealsApiCall);
         currentPagination = dealsApiCall.pagination;
-        render(currentDeals, currentPagination);
+        currentDeals = dealsApiCall.results;
+        render(currentDeals, currentPagination)
       }, 300);
+      ;
     }
 
     // Fonction qui gère le deuxième slider
     let debounceTimeoutTwo;
+
     async function slideTwo() {
       clearTimeout(debounceTimeoutTwo);
 
       debounceTimeoutTwo = setTimeout(async () => {
         var value1 = parseInt(sliderOne.value);
         var value2 = parseInt(sliderTwo.value);
+
         if (value2 - value1 <= minGap) {
           sliderTwo.value = value1 + minGap;
         }
+
         if (sliderName === nameDate) {
           currentParameters.endDate = value2;
           displayValTwo.textContent = formatageDate(sliderTwo.value);
-        }
-        else if (sliderName === namePrice) {
+        } else if (sliderName === namePrice) {
           currentParameters.priceMax = value2;
           displayValTwo.textContent = sliderTwo.value;
         }
@@ -429,16 +435,18 @@ function initializeSliders(currentDeals) {
         fillColor();
 
         const dealsApiCall = await fetchDeals();
-        currentDeals = dealsApiCall.results;
+        setCurrentDeals(dealsApiCall.results);
         currentPagination = dealsApiCall.pagination;
+        currentDeals = dealsApiCall.results;
         render(currentDeals, currentPagination);
       }, 300);
     }
 
+
     // Fonction de remplissage de la couleur
     function fillColor() {
-      let percent1 = (sliderOne.value / sliderMaxValue) * 100;
-      let percent2 = (sliderTwo.value / sliderMaxValue) * 100;
+      let percent1 = ((sliderOne.value - sliderMinValue) / (sliderMaxValue - sliderMinValue)) * 100;
+      let percent2 = ((sliderTwo.value - sliderMinValue) / (sliderMaxValue - sliderMinValue)) * 100;
       sliderTrack.style.background = `linear-gradient(to right, #dadae5 ${percent1}% , #3264fe ${percent1}% , #3264fe ${percent2}%, #dadae5 ${percent2}%)`;
     }
     sliderOne.addEventListener("input", slideOne);
@@ -515,8 +523,8 @@ buttonHotDeals.addEventListener('click', async () => {
   setCurrentDeals(dealsApiCall);
 
   const dealsWithSales = await Promise.all(dealsApiCall.results.map(async (deal) => {
-    let vintedsales = await fetchSales(deal.dealabs.ID, 1, 100); 
-    return { deal, vintedsales }; 
+    let vintedsales = await fetchSales(deal.dealabs.ID, 1, 100);
+    return { deal, vintedsales };
   }));
 
   let temp = dealsWithSales.map(({ deal, vintedsales }) => {
@@ -606,16 +614,15 @@ const calculatePriceIndicators = (sales) => {
 
 };
 
-const vintedTable = async(legoSetId, pagination) => {
-  const sales = await fetchSales(legoSetId, pagination, 5);
+const vintedTable = async (legoSetId, pagination, sortBy="DateDown") => {
+  const sales = await fetchSales(legoSetId, pagination, 5, sortBy);
   const salesTableBody = document.getElementById('vinted-sales');
-  console.log(pagination);
-  console.log(sales);
-  salesTableBody.innerHTML = ''; 
+  salesTableBody.innerHTML = '';
   salesTableBody.innerHTML = sales.results.map(sale => `
   <tr>
   <td>${formatageDate(sale.timestamp)}</td>
-  <td><a href="${sale.link}" target="_blank">${sale.title}</a></td>
+  <td><a href="${sale.url}" target="_blank">${sale.title}</a></td>
+  <td>${sale.favourite_count}</td>
   <td>${sale.price} €</td>
   <td>${durationSince(sale.timestamp)} ago</td>
   </tr>
@@ -625,11 +632,10 @@ const vintedTable = async(legoSetId, pagination) => {
 
 
 const openVintedSalesPopup = async (legoSetId, price) => {
-  let sales = await fetchSales(legoSetId, 1, 50);
-  console.log(sales);
+  let sales = await fetchSales(legoSetId, 1, 100);
   const deal = currentDeals.find(d => d.dealabs.ID === legoSetId && parseFloat(price) === parseFloat(d.dealabs.price));
 
- 
+
   const vintedSalesContent = document.getElementById('vinted-sales-content');
 
 
@@ -638,7 +644,7 @@ const openVintedSalesPopup = async (legoSetId, price) => {
     vintedSalesContent.innerHTML = '<p>No Vinted sales found for this LEGO set.</p>';
   } else {
     const indicators = calculatePriceIndicators(sales);
-    sales= await fetchSales(legoSetId, 1, 5);
+    sales = await fetchSales(legoSetId, 1, 5);
 
     const discount = deal.dealabs.nextBestPrice !== 0 ? (100 - (deal.dealabs.price / deal.dealabs.nextBestPrice * 100)).toFixed(0) : 0;
 
@@ -646,39 +652,69 @@ const openVintedSalesPopup = async (legoSetId, price) => {
     const p5 = indicators.p5;
     const p25 = indicators.p25;
     const p50 = indicators.p50;
+    const mostRecentDeal = indicators.mostRecentOffer;
+    const oldestDeal = indicators.oldestDuration.split(' and')[0];
 
-
+    document.getElementById('sort-vinted').value = 'date-desc';
     document.getElementById('NbSales').textContent = indicators.numberOfSales;
-    document.getElementById('AvgPrice').textContent = `${avg} €`;
-    document.getElementById('P5').textContent = `${p5} €`;
-    document.getElementById('P25').textContent = `${p25} €`;
-    document.getElementById('P50').textContent = `${p50} €`;
-    let currentpage=1;
+    document.getElementById('AvgPrice').textContent = `${avg}€`;
+    document.getElementById('MostRecentDeal').textContent = `${mostRecentDeal}`;
+    document.getElementById('OldestDeal').textContent = `${oldestDeal}`;
+    document.getElementById('P50').textContent = `${p50}€`;
+    let currentpage = 1;
     await vintedTable(legoSetId, currentpage);
 
 
-    
+
 
 
 
     document.getElementById('vinted-modal').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
     document.getElementById('close-modal').addEventListener('click', () => {
       document.getElementById('vinted-modal').style.display = 'none';
+      document.getElementById('overlay').style.display = 'none'; // Masque l'overlay
     });
     document.getElementById('prev-page-vinted').addEventListener('click', async () => {
       if (currentpage > 1) {
-        currentpage-=1;
+        currentpage -= 1;
         await vintedTable(legoSetId, currentpage);
       }
     });
 
+    
+
     document.getElementById('next-page-vinted').addEventListener('click', async () => {
       if (currentpage < sales.pagination.pageCount) {
-        currentpage+=1;
+        currentpage += 1;
         await vintedTable(legoSetId, currentpage);
       }
     });
+
     
+    document.getElementById('sort-vinted').addEventListener('change', async (event) => {
+      let sortType="";
+  
+      switch (event.target.value) {
+          case 'price-asc':
+              sortType = "priceUp";
+              break;
+          case 'price-desc':
+              sortType= "priceDown";
+              break;
+          case 'favorite-asc':
+              sortType = "favouritesUp";
+              break;
+          case 'favorite-desc':
+              sortType = "favouritesDown";
+              break;
+          default:
+              sortType="DateDown" ;
+              break;
+      }
+      await vintedTable(legoSetId, 1, sortType);
+  });
+
 
   }
 };

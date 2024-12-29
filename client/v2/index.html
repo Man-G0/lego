@@ -4,6 +4,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <title> Lets go - Most Interesting Lego's deals </title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     html,
     body {
@@ -302,13 +303,19 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 2%;
-      ;
       padding: 2%;
       box-sizing: border-box;
       align-content: flex-start;
       height: 85vh;
       overflow-y: auto;
     }
+
+    @media (max-width: 900px) {
+      .deals-container {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
 
     .deal {
       border: 1px solid #ccc;
@@ -476,6 +483,19 @@
       background-color: #0056b3;
     }
 
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+      display: none;
+      z-index: 999;
+    }
+
+
     #vinted-modal {
       display: none;
       position: fixed;
@@ -501,8 +521,9 @@
     .modal-header {
       display: flex;
       justify-content: space-between;
+      flex-direction: row;
       align-items: center;
-      align-items: center;
+
       padding: 10px 20px;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
       border-radius: 0 0 50% 50% / 0 0 10% 10%;
@@ -513,14 +534,6 @@
       text-align: center;
       flex: 1;
       /* Make the title take up all remaining space */
-    }
-
-    #close-modal {
-      background: none;
-      border: none;
-      font-size: 1.5rem;
-      color: red;
-      cursor: pointer;
     }
 
     .modal-body {
@@ -540,7 +553,7 @@
     }
 
     .indicator-circle {
-      background-color:#FFD502;
+      background-color: #FFD502;
       color: black;
       width: 5vw;
       height: 5vw;
@@ -548,7 +561,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.2rem;
+      font-size: clamp(0.7rem, 1.2vw, 2rem);
       font-weight: bold;
       margin: 0 auto;
     }
@@ -558,7 +571,6 @@
       font-size: 0.9rem;
     }
 
-    /* Sales Table Styling */
     .sales-table {
       width: 100%;
       border-collapse: collapse;
@@ -590,7 +602,6 @@
       border-radius: 5px;
       cursor: pointer;
       display: block;
-      margin: 20px auto 0;
     }
 
     #close-modal:hover {
@@ -728,54 +739,69 @@
     </section>
   </section>
   <!-- Popup -->
+  <div id="overlay" class="overlay"></div>
   <div id="vinted-modal">
     <div class="modal-header">
       <h2>Vinted Sales for LEGO Set</h2>
       <button id="close-modal"
-      style="background: none; border: none; font-size: 1.5rem; color: red; cursor: pointer; ">&times;</button>
-      </div>
-      <div class="modal-body" id="vinted-sales-content">
-        
-        <div class="indicators">
-          <div class="indicator">
+        style="background: none; border: none; font-size: 1.5rem; color: red; cursor: pointer; ">&times;</button>
+    </div>
+    <div class="modal-body" id="vinted-sales-content">
+
+      <div class="indicators">
+        <div class="indicator">
           <div class="indicator-circle" id="NbSales"></div>
           <div class="indicator-label">Number of Sales</div>
-          </div>
-          <div class="indicator">
-          <div class="indicator-circle" id ="AvgPrice"></div>
+        </div>
+        <div class="indicator">
+          <div class="indicator-circle" id="AvgPrice"></div>
           <div class="indicator-label">Average Price</div>
-          </div>
-          <div class="indicator">
-          <div class="indicator-circle" id="P5"></div>
-          <div class="indicator-label">P5</div>
-          </div>
-          <div class="indicator">
-          <div class="indicator-circle" id = "P25"></div>
-          <div class="indicator-label">P25</div>
-          </div>
-          <div class="indicator">
+        </div>
+        <div class="indicator">
           <div class="indicator-circle" id="P50"></div>
           <div class="indicator-label">P50</div>
-          </div>
         </div>
-        <table class="sales-table">
-          <thead>
-            <tr>
-              <th>Price</th>
-              <th>Date</th>
-              <th>Comments</th>
-            </tr>
-          </thead>
-          <tbody id="vinted-sales"></tbody>
-        </table>
-        
-        <div class="page-navigation"></div>
+        <div class="indicator">
+          <div class="indicator-circle" id="OldestDeal"></div>
+          <div class="indicator-label">OldestDeal</div>
+        </div>
+        <div class="indicator">
+          <div class="indicator-circle" id="MostRecentDeal"></div>
+          <div class="indicator-label">MostRecentDeal</div>
+        </div>
+
+      </div>
+      <table class="sales-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Title</th>
+            <th>Favorites</th>
+            <th>Price</th>
+            <th>Time Since</th>
+          </tr>
+        </thead>
+        <tbody id="vinted-sales"></tbody>
+      </table>
+      <div class="column-container" style="justify-content: space-between; align-items: center; width: 100%;">
+        <div class="page-navigation">
           <button id="prev-page-vinted" style="cursor: pointer;" value="-1">&lt;</button>
           <span id="page-info-vinted">Page 1 of X</span>
           <button id="next-page-vinted" style="cursor: pointer;" value="1">&gt;</button>
         </div>
+        <div class="sort-container">
+          <label for="sort-vinted">Sort by:</label>
+          <select id="sort-vinted">
+            <option value="date-desc">Date: Newest First</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="favorite-desc">Most favorited</option>
+            <option value="favorite-asc">Least favorited</option>
+          </select>
+        </div>
       </div>
-      </div>="vinted-sales-content" style="margin-top: 10px;"></div>
+    </div>
+
 
 
 </body>

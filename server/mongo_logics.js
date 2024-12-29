@@ -108,10 +108,9 @@ async function findDeals(priceMin, priceMax, startDate, endDate, sortBy, limit, 
       }
     }
     
-    // Rechercher dans la collection "deals"
     const deals = await db.collection('deals').find(query).skip(offset).limit(limit).sort(sort).toArray();
 
-    const total = await db.collection('deals').countDocuments(query); // Compter le nombre total de documents correspondant au filtre
+    const total = await db.collection('deals').countDocuments(query);
 
     await closeDatabaseConnection(client);
 
@@ -126,7 +125,7 @@ async function findSales(legoSetId, priceMin, priceMax, startDate, endDate, sort
   try {
     const { db, client } = await connectToDatabase();
     
-    let query = {}; // Initialisation du filtre
+    let query = {}; 
     let sort = {};  // Initialisation du tri
 
     // Filtre : ID du set LEGO
@@ -155,7 +154,7 @@ async function findSales(legoSetId, priceMin, priceMax, startDate, endDate, sort
       query['favourite_count'] = { $gte: favouriteCount };
     }
 
-    // Tri : Configurer le critère de tri
+    // Tri
     if (sortBy) {
       switch (sortBy) {
         case 'priceUp':
@@ -178,7 +177,7 @@ async function findSales(legoSetId, priceMin, priceMax, startDate, endDate, sort
     // Exécuter la requête MongoDB
     const sales = await db.collection('sales').find(query).skip(offset).limit(limit).sort(sort).toArray();
 
-    const total = await db.collection('sales').countDocuments(query); // Total des résultats
+    const total = await db.collection('sales').countDocuments(query); 
 
     await closeDatabaseConnection(client);
 
